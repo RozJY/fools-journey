@@ -1,0 +1,1437 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>愚者之旅 The Fool's Journey</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#242445;--bg2:#1e2d50;--bg3:#1a4a78;
+  --gold:#c8a951;--gold2:#f5d78e;
+  --text:#e8e8e8;--text2:#a0a0b0;
+  --fire:#e74c3c;--water:#3498db;--wind:#2ecc71;--earth:#f39c12;
+  --hp-green:#27ae60;--hp-red:#c0392b;
+  --card-bg:#1e2d4a;--card-border:#3a4f7a;--card-sel:#c8a951;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'PingFang SC','Microsoft YaHei',sans-serif;overflow:hidden;}
+#app{max-width:420px;margin:0 auto;height:100%;display:flex;flex-direction:column;position:relative;}
+.screen{display:none;flex-direction:column;height:100%;width:100%;}
+.screen.active{display:flex;}
+
+/* --- 菜单 --- */
+#screen-menu{justify-content:center;align-items:center;gap:16px;padding:30px 24px;text-align:center;}
+#screen-menu h1{font-size:32px;color:var(--gold);letter-spacing:4px;}
+#screen-menu h2{font-size:14px;color:var(--text2);margin-top:-4px;letter-spacing:2px;}
+.menu-btn{width:80%;padding:14px;border:1px solid var(--gold);background:transparent;color:var(--gold);font-size:17px;border-radius:8px;cursor:pointer;transition:all .2s;}
+.menu-btn:active{background:var(--gold);color:var(--bg);}
+.menu-btn.secondary{border-color:var(--bg3);color:var(--text2);font-size:15px;padding:10px;}
+.menu-btn.secondary:active{background:var(--bg3);color:var(--text);}
+.menu-sub{font-size:12px;color:var(--text2);margin-top:-6px;}
+
+/* --- 战斗 --- */
+#screen-battle{padding:8px 10px;gap:5px;}
+.boss-area{background:var(--bg2);border-radius:10px;padding:10px 12px;}
+.boss-header{display:flex;justify-content:space-between;align-items:center;}
+.boss-name{font-size:16px;font-weight:bold;}
+.boss-align{font-size:12px;padding:2px 8px;border-radius:4px;font-weight:bold;}
+.boss-align.upright{background:#2d6a4f;color:#95d5b2;}
+.boss-align.reversed{background:#6a2d2d;color:#d5959f;}
+.boss-sub{font-size:11px;color:var(--text2);margin:2px 0 6px;}
+.hp-bar-wrap{height:16px;background:#111;border-radius:8px;overflow:hidden;position:relative;}
+.hp-bar{height:100%;border-radius:8px;transition:width .4s;}
+.hp-bar.boss{background:linear-gradient(90deg,var(--hp-red),#e74c3c);}
+.hp-bar.player{background:linear-gradient(90deg,var(--hp-green),#2ecc71);}
+.hp-text{position:absolute;right:6px;top:0;line-height:16px;font-size:11px;font-weight:bold;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.6);}
+
+.log-area{flex:1;min-height:0;background:var(--bg2);border-radius:10px;padding:10px;overflow-y:auto;font-size:13px;line-height:1.7;}
+.log-area::-webkit-scrollbar{width:4px;}
+.log-area::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:2px;}
+.log-boss{color:#ff7675;}
+.log-player{color:#55efc4;}
+.log-system{color:var(--text2);}
+.log-damage{color:#fdcb6e;font-weight:bold;}
+.log-divider{border-top:1px solid var(--bg3);margin:6px 0;}
+
+.player-bar{display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:4px 0;}
+.player-hp-label{display:flex;align-items:center;gap:6px;}
+.shield-badge{background:#3498db;padding:1px 6px;border-radius:4px;font-size:11px;}
+.status-icons{display:flex;gap:4px;font-size:11px;flex-wrap:wrap;}
+.status-tag{padding:1px 5px;border-radius:3px;background:var(--bg3);color:var(--text2);}
+
+.hand-section{background:var(--bg2);border-radius:10px;padding:8px;}
+.hand-label{font-size:11px;color:var(--text2);margin-bottom:4px;}
+.hand-row{display:flex;flex-wrap:wrap;gap:5px;}
+.card-btn{
+  min-width:54px;padding:5px 4px 4px;border:2px solid var(--card-border);background:var(--card-bg);
+  color:var(--text);font-size:13px;border-radius:6px;cursor:pointer;text-align:center;
+  transition:all .15s;line-height:1.2;position:relative;
+}
+.card-btn:active{transform:scale(.95);}
+.card-btn.selected{border-color:var(--card-sel);background:#2a3a5a;box-shadow:0 0 8px rgba(200,169,81,.4);}
+.card-btn.disabled{opacity:.3;cursor:not-allowed;}
+.card-btn.cursed{border-color:#9b59b6;box-shadow:0 0 10px rgba(155,89,182,.6);animation:cursePulse 1.5s infinite;}
+@keyframes cursePulse{0%,100%{box-shadow:0 0 6px rgba(155,89,182,.4);}50%{box-shadow:0 0 14px rgba(155,89,182,.8);}}
+.card-btn .card-pip{font-size:18px;font-weight:bold;}
+.card-btn .card-elem{font-size:9px;color:var(--text2);}
+.card-btn .card-suit{font-size:10px;color:var(--text2);}
+.card-btn .court-desc{font-size:8px;color:var(--gold2);margin-top:1px;white-space:nowrap;}
+.card-btn.fire{border-left:3px solid var(--fire);}
+.card-btn.water{border-left:3px solid var(--water);}
+.card-btn.wind{border-left:3px solid var(--wind);}
+.card-btn.earth{border-left:3px solid var(--earth);}
+
+.preview-bar{background:var(--bg3);border-radius:8px;padding:6px 10px;font-size:12px;color:var(--gold2);text-align:center;min-height:28px;}
+
+.action-bar{display:flex;gap:8px;padding:4px 0 8px;}
+.action-btn{flex:1;padding:12px;border:none;border-radius:8px;font-size:15px;font-weight:bold;cursor:pointer;transition:all .2s;}
+.btn-play{background:var(--gold);color:var(--bg);}
+.btn-play:disabled{background:#555;color:#888;cursor:not-allowed;}
+.btn-skip{background:var(--bg3);color:var(--text);}
+.btn-rules{width:36px;flex:none;background:var(--bg3);color:var(--text2);font-size:16px;}
+
+/* --- 祝福 --- */
+#screen-blessing{justify-content:center;align-items:center;gap:16px;padding:30px 20px;text-align:center;}
+#screen-blessing h2{color:var(--gold);font-size:20px;}
+.blessing-cards{display:flex;flex-direction:column;gap:12px;width:100%;}
+.blessing-card{padding:16px;border:1px solid var(--card-border);background:var(--bg2);border-radius:10px;cursor:pointer;text-align:left;transition:all .2s;}
+.blessing-card:active{border-color:var(--gold);background:var(--bg3);}
+.blessing-card.disabled{opacity:.35;cursor:not-allowed;}
+.blessing-card h3{font-size:16px;color:var(--gold2);margin-bottom:4px;}
+.blessing-card p{font-size:13px;color:var(--text2);}
+
+/* --- 结果 --- */
+#screen-result{justify-content:center;align-items:center;gap:20px;padding:40px 24px;text-align:center;}
+#screen-result h2{font-size:28px;}
+#screen-result .result-stats{font-size:14px;color:var(--text2);line-height:2;}
+
+/* --- 弹窗 --- */
+.modal{display:none;position:absolute;inset:0;background:rgba(0,0,0,.7);z-index:10;justify-content:center;align-items:center;padding:20px;}
+.modal.active{display:flex;}
+.modal-content{background:var(--bg2);border:1px solid var(--gold);border-radius:12px;padding:20px;width:100%;max-width:360px;text-align:center;}
+.modal-content h3{color:var(--gold);margin-bottom:12px;}
+.modal-btns{display:flex;flex-direction:column;gap:8px;margin-top:12px;}
+.modal-btn{padding:12px;border:1px solid var(--card-border);background:var(--card-bg);color:var(--text);border-radius:8px;cursor:pointer;font-size:14px;}
+.modal-btn:active{border-color:var(--gold);}
+
+/* --- 旅途进度 --- */
+.journey-bar{display:flex;gap:4px;justify-content:center;padding:2px 0;}
+.journey-dot{width:10px;height:10px;border-radius:50%;background:var(--bg3);}
+.journey-dot.done{background:var(--hp-green);}
+.journey-dot.current{background:var(--gold);box-shadow:0 0 6px var(--gold);}
+
+/* --- 规则页 --- */
+#screen-rules{padding:12px 16px;overflow-y:auto;}
+.rules-back{background:none;border:none;color:var(--gold);font-size:14px;cursor:pointer;padding:4px 0;margin-bottom:8px;}
+.rules-title{color:var(--gold);font-size:20px;text-align:center;margin-bottom:12px;}
+.rules-section{margin-bottom:14px;}
+.rules-section h3{color:var(--gold2);font-size:14px;margin-bottom:4px;border-bottom:1px solid var(--bg3);padding-bottom:3px;}
+.rules-section p,.rules-section ul{font-size:12px;color:var(--text2);line-height:1.8;}
+.rules-section ul{padding-left:16px;}
+.rules-counter{display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:12px;color:var(--text2);margin:4px 0;}
+.rules-counter span{background:var(--bg3);padding:3px 8px;border-radius:4px;text-align:center;}
+
+/* --- 教学 --- */
+#screen-tutorial{justify-content:center;align-items:center;gap:12px;padding:30px 20px;text-align:center;}
+#screen-tutorial h2{color:var(--gold);font-size:20px;}
+.tut-level-list{display:flex;flex-direction:column;gap:8px;width:100%;}
+.tut-level{padding:12px;border:1px solid var(--card-border);background:var(--bg2);border-radius:8px;cursor:pointer;text-align:left;display:flex;justify-content:space-between;align-items:center;}
+.tut-level:active{border-color:var(--gold);}
+.tut-level .tl-name{font-size:14px;color:var(--text);}
+.tut-level .tl-desc{font-size:11px;color:var(--text2);}
+.tut-level .tl-status{font-size:12px;color:var(--hp-green);}
+.hint-bar{background:#2d4a1e;border:1px solid #5a8a3a;border-radius:8px;padding:8px 12px;font-size:12px;color:#b5e48c;text-align:center;line-height:1.5;}
+.hint-bar .hint-obj{font-weight:bold;color:#d4fc79;font-size:13px;}
+</style>
+</head>
+<body>
+<div id="app">
+  <!-- 菜单 -->
+  <div id="screen-menu" class="screen active">
+    <h1>愚者之旅</h1>
+    <h2>The Fool's Journey</h2>
+    <div style="margin:12px 0;color:var(--text2);font-size:13px;line-height:1.8;">
+      塔罗牌灵感卡牌游戏<br>以大阿尔卡纳为Boss · 小阿尔卡纳为武器
+    </div>
+    <button class="menu-btn" onclick="Game.startTutorialMenu()">新手教学</button>
+    <div class="menu-sub">逐步学习所有游戏机制</div>
+    <button class="menu-btn" onclick="Game.startJourney('short')">短旅途模式</button>
+    <div class="menu-sub">愚人 → 5个随机Boss → 世界 (7关)</div>
+    <button class="menu-btn" onclick="Game.startJourney('quick')">快速战斗</button>
+    <div class="menu-sub">随机选择一个Boss进行单场对战</div>
+    <button class="menu-btn secondary" onclick="showScreen('screen-rules')">规则说明</button>
+  </div>
+
+  <!-- 教学关卡列表 -->
+  <div id="screen-tutorial" class="screen">
+    <h2>新手教学</h2>
+    <p style="color:var(--text2);font-size:13px;margin-bottom:4px;">完成每关的目标来学习机制</p>
+    <div class="tut-level-list" id="tut-levels"></div>
+    <button class="menu-btn secondary" onclick="showScreen('screen-menu')" style="margin-top:8px;">返回主菜单</button>
+  </div>
+
+  <!-- 战斗 -->
+  <div id="screen-battle" class="screen">
+    <div class="journey-bar" id="journey-bar"></div>
+    <div class="boss-area">
+      <div class="boss-header">
+        <span class="boss-name" id="boss-name"></span>
+        <span class="boss-align" id="boss-align"></span>
+      </div>
+      <div class="boss-sub" id="boss-sub"></div>
+      <div class="hp-bar-wrap"><div class="hp-bar boss" id="boss-hp-bar"></div><span class="hp-text" id="boss-hp-text"></span></div>
+    </div>
+    <div id="hint-bar" class="hint-bar" style="display:none"></div>
+    <div class="log-area" id="battle-log"></div>
+    <div class="player-bar">
+      <div class="player-hp-label">
+        <span>❤️ <span id="player-hp-text"></span></span>
+        <span class="shield-badge" id="player-shield" style="display:none"></span>
+      </div>
+      <div class="status-icons" id="player-status"></div>
+    </div>
+    <div class="hp-bar-wrap" style="height:10px;"><div class="hp-bar player" id="player-hp-bar"></div></div>
+    <div class="hand-section">
+      <div class="hand-label">数字牌 <span id="hand-count"></span></div>
+      <div class="hand-row" id="number-hand"></div>
+      <div class="hand-label" style="margin-top:6px;">宫廷牌</div>
+      <div class="hand-row" id="court-hand"></div>
+    </div>
+    <div class="preview-bar" id="preview-bar"></div>
+    <div class="action-bar">
+      <button class="action-btn btn-play" id="btn-play" onclick="Game.play()" disabled>出牌</button>
+      <button class="action-btn btn-skip" id="btn-skip" onclick="Game.skip()">跳过</button>
+      <button class="action-btn btn-rules" onclick="Game._rulesOverlay=true;showScreen('screen-rules')">?</button>
+    </div>
+  </div>
+
+  <!-- 祝福 -->
+  <div id="screen-blessing" class="screen">
+    <h2>✨ 旅途祝福 ✨</h2>
+    <p style="color:var(--text2);font-size:13px;">击败Boss后，选择一项祝福</p>
+    <div class="blessing-cards" id="blessing-cards"></div>
+  </div>
+
+  <!-- 结果 -->
+  <div id="screen-result" class="screen">
+    <h2 id="result-title"></h2>
+    <div class="result-stats" id="result-stats"></div>
+    <button class="menu-btn" id="result-back-btn" onclick="Game.backToMenu()">返回主菜单</button>
+  </div>
+
+  <!-- 规则 -->
+  <div id="screen-rules" class="screen"></div>
+
+  <!-- 选择弹窗 -->
+  <div class="modal" id="modal-choice">
+    <div class="modal-content">
+      <h3 id="modal-title"></h3>
+      <p id="modal-desc" style="font-size:13px;color:var(--text2);"></p>
+      <div class="modal-btns" id="modal-btns"></div>
+    </div>
+  </div>
+</div>
+
+<script src="game_bundle.js"></script>
+<script>
+/* ================================================================
+   解构模块
+   ================================================================ */
+const {
+  RandomSystem,
+  ElementSystem: { Element, Suit, SUIT_TO_ELEMENT, COUNTER_MAP, ElementSystem },
+  SpiritNumber: { SpiritGroup, Alignment, SpiritNumber },
+  CardData: { CardType, CourtRank, MAJOR_ARCANA, createMinorArcanaDeck, getRandomBossPool, getBossById },
+  DamageCalculator,
+  StatusEffect: { EffectType, StatusEffect, StatusEffectManager },
+  DeckManager,
+  CourtCardLogic,
+  PlayerState,
+  BossSkills: { executeSkill, triggerPassive },
+  BossController: { BossRuntime, BossController },
+  BlessingSystem,
+  GameModeManager: { GameMode },
+} = FoolsJourney;
+
+/* ================================================================
+   常量
+   ================================================================ */
+const ELEM_ICON = {fire:'🔥',water:'🌊',wind:'💨',earth:'🌍',none:'⭐'};
+const ELEM_CN   = {fire:'火',water:'水',wind:'风',earth:'土',none:'无'};
+const SUIT_ICON = {wands:'🔥',cups:'🌊',swords:'💨',pentacles:'🌍'};
+const SUIT_CN   = {wands:'权杖',cups:'圣杯',swords:'宝剑',pentacles:'星币'};
+const RANK_CN   = {page:'侍从',knight:'骑士',queen:'王后',king:'国王'};
+const ALIGN_CN  = {upright:'正位',reversed:'逆位'};
+const COURT_EFFECT_CN = {
+  page_same:'同元素+2伤害', page_diff:'转换为本牌元素,-1伤害',
+  knight_same:'调节点数±4', knight_diff:'调节点数±2',
+  queen_same:'强制灵数+4', queen_diff:'强制灵数+2',
+  king_same:'翻转Boss正逆位+跳过Boss行动', king_diff:'翻转Boss正逆位(1回合)',
+};
+
+function $(id){return document.getElementById(id);}
+function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));$(id).classList.add('active');}
+
+/* ================================================================
+   规则页
+   ================================================================ */
+function renderRules(){
+  $('screen-rules').innerHTML = `
+  <button class="rules-back" onclick="Game._rulesOverlay?showScreen('screen-battle'):showScreen('screen-menu');Game._rulesOverlay=false;">← 返回</button>
+  <div class="rules-title">规则说明</div>
+  <div class="rules-section"><h3>基础流程</h3><p>
+    每回合: Boss先行动(技能或普攻) → 玩家出1张数字牌(可附加1张宫廷牌) → 结算伤害 → 抽1牌。<br>
+    玩家25HP, 初始5张手牌, 上限8张。Boss普攻固定3伤害。击败Boss即胜利。<br>
+    跳过回合会扣除1点HP。
+  </p></div>
+  <div class="rules-section"><h3>元素与克制</h3><p>
+    四元素循环克制: 火→土→水→风→火<br>
+    花色对应: 权杖=🔥火 · 圣杯=🌊水 · 宝剑=💨风 · 星币=🌍土
+  </p>
+  <div class="rules-counter">
+    <span>🔥克制🌍 (+2)</span><span>🌍克制🌊 (+2)</span>
+    <span>🌊克制💨 (+2)</span><span>💨克制🔥 (+2)</span>
+  </div>
+  <p>克制+2伤害 | 被克-1伤害 | 中性±0</p></div>
+  <div class="rules-section"><h3>灵数系统</h3><p>
+    点数1-5=创意组(基础伤害=点数), 对正位Boss+2<br>
+    点数6-10=收束组(基础伤害=点数-5), 对逆位Boss+2
+  </p></div>
+  <div class="rules-section"><h3>伤害公式</h3><p>
+    总伤害 = 基础点数 + 元素修正 + 灵数对位 + 宫廷Buff + 永久加成<br>
+    最低为0
+  </p></div>
+  <div class="rules-section"><h3>宫廷牌</h3><p>
+    每回合可附加1张宫廷牌配合数字牌。同花色宫廷牌效果更强。
+  </p><ul>
+    <li><b>侍从</b>: 转换攻击元素为侍从花色。同元素+2伤害</li>
+    <li><b>骑士</b>: 调节数字牌点数±2(同元素±4)</li>
+    <li><b>王后</b>: 无视正逆位，强制获得灵数+2(同元素+4)</li>
+    <li><b>国王</b>: 翻转Boss正逆位。同元素额外跳过Boss行动</li>
+  </ul></div>
+  <div class="rules-section"><h3>祝福(场间)</h3><p>
+    击败Boss后三选一:<br>
+    ⭐星之祝福: 永久+1伤害(整旅途一次)<br>
+    🌙月之祝福: 获得6护盾(可叠加)<br>
+    ☀️日之祝福: 回复10HP
+  </p></div>
+  <div class="rules-section"><h3>短旅途模式</h3><p>
+    愚人(HP12) → 5个随机Boss → 世界(终极Boss), 共7战。<br>
+    Boss第1回合强制施放技能。场间恢复70%最大HP。<br>
+    前2关胜利无奖励，第3关起可选祝福。场间恢复50%HP。<br>
+    祝福: 护盾4(上限6), 回复5HP, 永久+1需第3关后解锁。
+  </p></div>`;
+}
+renderRules();
+
+/* ================================================================
+   教学系统
+   ================================================================ */
+const TUTORIAL_LEVELS = [
+  { id:'basic', name:'第1课: 出牌基础',
+    desc:'学习出牌和伤害计算',
+    objective:'打出任意数字牌造成伤害',
+    objectiveCheck: (g) => g._tutDamageDealt > 0,
+    bossId:0, bossAlign:'upright', bossHp:6,
+    fixedHand:[
+      {id:'t_w3',type:CardType.NUMBER,suit:Suit.WANDS,pip:3},
+      {id:'t_c5',type:CardType.NUMBER,suit:Suit.CUPS,pip:5},
+      {id:'t_s2',type:CardType.NUMBER,suit:Suit.SWORDS,pip:2},
+    ],
+    hint:'选择一张数字牌，点击"出牌"。点数1-5的基础伤害=点数本身。注意: 跳过回合会扣1HP！',
+  },
+  { id:'element', name:'第2课: 元素克制',
+    desc:'用克制元素打出更高伤害',
+    objective:'使用克制Boss元素的牌造成伤害(含+2克制加成)',
+    objectiveCheck: (g) => g._tutCounterUsed,
+    bossId:4, bossAlign:'upright', bossHp:10,
+    fixedHand:[
+      {id:'t_w4',type:CardType.NUMBER,suit:Suit.WANDS,pip:4},
+      {id:'t_s3',type:CardType.NUMBER,suit:Suit.SWORDS,pip:3},
+      {id:'t_p2',type:CardType.NUMBER,suit:Suit.PENTACLES,pip:2},
+      {id:'t_c1',type:CardType.NUMBER,suit:Suit.CUPS,pip:1},
+    ],
+    hint:'皇帝是🔥火属性。💨风克制🔥火(+2)。选择宝剑牌(💨风)攻击！',
+  },
+  { id:'spirit', name:'第3课: 灵数对位',
+    desc:'利用灵数系统获得额外伤害',
+    objective:'触发灵数对位加成(+2)',
+    objectiveCheck: (g) => g._tutAlignUsed,
+    bossId:3, bossAlign:'upright', bossHp:10,
+    fixedHand:[
+      {id:'t_w2',type:CardType.NUMBER,suit:Suit.WANDS,pip:2},
+      {id:'t_c7',type:CardType.NUMBER,suit:Suit.CUPS,pip:7},
+      {id:'t_s4',type:CardType.NUMBER,suit:Suit.SWORDS,pip:4},
+    ],
+    hint:'Boss是正位。点数1-5(创意组)对正位Boss有灵数+2加成。选一张1-5的牌！',
+  },
+  { id:'court', name:'第4课: 宫廷牌',
+    desc:'学习使用宫廷牌增强攻击',
+    objective:'附加宫廷牌进行攻击',
+    objectiveCheck: (g) => g._tutCourtUsed,
+    bossId:0, bossAlign:'reversed', bossHp:12,
+    fixedHand:[
+      {id:'t_w5',type:CardType.NUMBER,suit:Suit.WANDS,pip:5},
+      {id:'t_c3',type:CardType.NUMBER,suit:Suit.CUPS,pip:3},
+      {id:'t_cp',type:CardType.COURT,suit:Suit.CUPS,rank:CourtRank.PAGE},
+      {id:'t_wq',type:CardType.COURT,suit:Suit.WANDS,rank:CourtRank.QUEEN},
+    ],
+    hint:'先选一张数字牌，再选一张宫廷牌。侍从可转换元素，王后强制灵数加成。注意同花色效果更强！',
+  },
+  { id:'boss_skill', name:'第5课: Boss技能',
+    desc:'学会应对Boss的技能效果',
+    objective:'在Boss使用技能后存活并击败Boss',
+    objectiveCheck: (g) => g._tutBossSkillSeen && g.boss && g.boss.isDefeated(),
+    bossId:5, bossAlign:'reversed', bossHp:8,
+    fixedHand:[
+      {id:'t_w4b',type:CardType.NUMBER,suit:Suit.WANDS,pip:4},
+      {id:'t_c5b',type:CardType.NUMBER,suit:Suit.CUPS,pip:5},
+      {id:'t_s3b',type:CardType.NUMBER,suit:Suit.SWORDS,pip:3},
+      {id:'t_p2b',type:CardType.NUMBER,suit:Suit.PENTACLES,pip:2},
+      {id:'t_wkn',type:CardType.COURT,suit:Suit.WANDS,rank:CourtRank.KNIGHT},
+      {id:'t_cqu',type:CardType.COURT,suit:Suit.CUPS,rank:CourtRank.QUEEN},
+    ],
+    hint:'Boss可能封禁宫廷牌！注意日志中的技能效果，合理选牌应对。试试用宫廷牌增强攻击！',
+  },
+];
+
+let tutorialCleared = {};
+
+/* ================================================================
+   Game 主控制器
+   ================================================================ */
+const Game = {
+  rng:null, player:null, deck:null, boss:null, status:null,
+  turn:0, selectedNumber:null, selectedCourt:null,
+  journey:null, battleLog:[], _pendingChoice:null, _autoPlay:false,
+  _rulesOverlay:false, _tutLevel:null, _inputLocked:false,
+  _devilMark:null, _playerSkipNext:false, _empressSuffocateCount:0,
+  // 攻击追踪(Bug修复)
+  _lastAttackElement:null, _lastAttackCountered:false,
+  // 教学追踪
+  _tutDamageDealt:0, _tutCounterUsed:false, _tutAlignUsed:false,
+  _tutCourtUsed:false, _tutBossSkillSeen:false,
+
+  /* ========== 教学 ========== */
+  startTutorialMenu() {
+    const el = $('tut-levels');
+    el.innerHTML = TUTORIAL_LEVELS.map(lv => {
+      const done = tutorialCleared[lv.id];
+      return `<div class="tut-level" onclick="Game.startTutorial('${lv.id}')">
+        <div><div class="tl-name">${lv.name}</div><div class="tl-desc">${lv.desc}</div></div>
+        <div class="tl-status">${done?'✓ 完成':''}</div></div>`;
+    }).join('');
+    showScreen('screen-tutorial');
+  },
+
+  startTutorial(levelId) {
+    const lv = TUTORIAL_LEVELS.find(l=>l.id===levelId);
+    if (!lv) return;
+    this._tutLevel = lv;
+    this._tutDamageDealt=0; this._tutCounterUsed=false;
+    this._tutAlignUsed=false; this._tutCourtUsed=false;
+    this._tutBossSkillSeen=false;
+
+    this.rng = new RandomSystem(12345);
+    this.player = new PlayerState();
+    this.journey = {stages:[{bossId:lv.bossId}],currentStage:0,defeatedBosses:[],mode:'tutorial'};
+
+    this.boss = BossController.create(lv.bossId, lv.bossAlign, this.rng, {hpOverride:lv.bossHp});
+    this.deck = new DeckManager(this.rng);
+    this.deck.init();
+    this.status = new StatusEffectManager();
+    this.turn = 0; this.battleLog = [];
+    this.selectedNumber = null; this.selectedCourt = null;
+
+    // 固定手牌
+    this.deck.hand = lv.fixedHand.map(c=>({...c}));
+
+    // 第5课: 开局封禁宫廷牌
+    if (lv.id === 'boss_skill') {
+      this.status.addToPlayer(new StatusEffect(EffectType.COURT_SEAL, { duration: 2 }));
+    }
+
+    this._log('system',`— 教学: ${lv.name} —`);
+    this._log('system',`${ELEM_ICON[this.boss.element]} ${this.boss.name} (${ALIGN_CN[this.boss.alignment]}) HP:${this.boss.hp}`);
+    if (lv.id === 'boss_skill') {
+      this._log('boss', this.boss.name + ' 发动技能: 禁锢 — 宫廷牌封印2回合');
+    }
+
+    showScreen('screen-battle');
+    this._nextTurn();
+  },
+
+  _checkTutorialObjective() {
+    if (!this._tutLevel) return;
+    if (this._tutLevel.objectiveCheck(this)) {
+      tutorialCleared[this._tutLevel.id] = true;
+      this._log('system','✦ 教学目标完成！');
+      setTimeout(()=>{
+        this._showResult(true);
+      },600);
+      return true;
+    }
+    return false;
+  },
+
+  /* ========== 旅途 ========== */
+  startJourney(mode) {
+    this._tutLevel = null;
+    this.rng = new RandomSystem(Date.now());
+    this.player = new PlayerState();
+    if (mode === 'short') {
+      const pool = getRandomBossPool();
+      const picked = this.rng.pickN(pool, 5);
+      const stages = [{bossId:0},...picked.map(b=>({bossId:b.id})),{bossId:21}];
+      this.journey = {stages, currentStage:0, defeatedBosses:[], mode:'short'};
+    } else {
+      const pool = getRandomBossPool();
+      const picked = this.rng.pick(pool);
+      this.journey = {stages:[{bossId:picked.id}], currentStage:0, defeatedBosses:[], mode:'quick'};
+    }
+    this._startCurrentBattle();
+  },
+
+  _startCurrentBattle() {
+    const stage = this.journey.stages[this.journey.currentStage];
+    const alignment = BossController.randomAlignment(this.rng);
+    let hpScale = 1.0;
+    if (this.journey.mode === 'short') {
+      if (this.journey.currentStage === 1) hpScale = 0.9;
+      else if (this.journey.currentStage >= 3) hpScale = 1.1;
+    }
+    const opts = {hpScale};
+    if (this.journey.mode === 'short' && stage.bossId === 0) opts.hpOverride = 12;
+    if (stage.bossId === 21) opts.defeatedCount = this.journey.defeatedBosses.length;
+
+    this.boss = BossController.create(stage.bossId, alignment, this.rng, opts);
+    this.deck = new DeckManager(this.rng);
+    this.deck.init();
+    this.status = new StatusEffectManager();
+    this.turn = 0; this.battleLog = [];
+    this.selectedNumber = null; this.selectedCourt = null;
+    this._lastAttackElement = null; this._lastAttackCountered = false;
+    this._devilMark = null; this._playerSkipNext = false;
+    this._empressSuffocateCount = 0;
+
+    this.deck.setHandLimit(this.player.handLimit);
+    this.deck.dealInitialHand(5);
+
+    // 短旅途: Boss第一回合强制施放技能
+    if (this.journey.mode === 'short' && this.boss.skillId) {
+      this.boss.actionSequence[0] = 'skill';
+    }
+
+    // Boss被动 onBattleStart
+    this._triggerPassive('onBattleStart');
+
+    // 世界被动: 旅途之镜 — 战斗开始即生效
+    if (this.boss._mirrorElement) {
+      this.boss.element = this.boss._mirrorElement;
+    }
+
+    this._log('system',`— 第${this.journey.currentStage+1}战 —`);
+    this._log('system',`${ELEM_ICON[this.boss.element]} ${this.boss.name} (${ALIGN_CN[this.boss.alignment]}) HP:${this.boss.hp}`);
+    if (this.boss.passiveId) {
+      const pData = this._getPassiveDesc(this.boss.passiveId);
+      if (pData) this._log('system',`被动: ${pData}`);
+    }
+
+    showScreen('screen-battle');
+    this._nextTurn();
+  },
+
+  /* ========== 回合流程 ========== */
+  _nextTurn() {
+    this.turn++;
+    this.boss.resetTurnFlags();
+    this.selectedNumber = null;
+    this.selectedCourt = null;
+
+    this._log('system',`\n══ 回合 ${this.turn} ══`);
+
+    // 被动 onTurnStart
+    this._triggerPassive('onTurnStart');
+
+    // 世界被动: 旅途之镜 — 应用元素切换
+    if (this.boss._mirrorElement) {
+      this.boss.element = this.boss._mirrorElement;
+    }
+
+    // 恐惧伤害
+    const fear = this.status.getFearDamage();
+    if (fear > 0) {
+      this.player.takeDamage(fear);
+      this._log('boss',`恐惧标记造成 ${fear} 点伤害`);
+      if (!this.player.isAlive()) return this._endBattle(false);
+    }
+
+    // 腐蚀伤害
+    const corrode = this.status.getCorrodeDamage();
+    if (corrode > 0) {
+      this.player.hp = Math.max(0, this.player.hp - corrode);
+      this._log('boss',`腐蚀造成 ${corrode} 点伤害（无视护甲）`);
+      if (!this.player.isAlive()) return this._endBattle(false);
+    }
+
+    // Boss行动(教学模式第1-4课跳过Boss行动)
+    const skipBossAction = this._tutLevel && ['basic','element','spirit','court'].includes(this._tutLevel.id);
+    if (!skipBossAction) {
+      this._executeBossTurn();
+      if (!this.player.isAlive()) return this._endBattle(false);
+      // 隐者封闭修正: 改为禁止下一次抽牌(1回合)而非永久
+      var drawBan = this.status.getPlayerEffect(EffectType.DRAW_BAN);
+      if (drawBan && drawBan.duration === -1 && drawBan.value === 1) {
+        drawBan.duration = 1;
+      }
+    }
+
+    // 如有待决选择(恶魔诱惑等)，先弹窗让玩家选择
+    if (this._pendingChoice) {
+      this._renderAll();
+      this._showChoiceModal();
+      return;
+    }
+
+    // 恶魔诅咒: 玩家被禁止出牌
+    if (this._playerSkipNext) {
+      this._playerSkipNext = false;
+      this._log('system','诅咒生效: 本回合无法出牌');
+      this._renderAll();
+      this._inputLocked = true;
+      var self = this;
+      setTimeout(function() { self._inputLocked = false; self._settleTurn(); }, 800);
+      return;
+    }
+
+    this._renderAll();
+  },
+
+  _executeBossTurn() {
+    // 国王跳过Boss行动
+    if (this.boss._skipNextAction) {
+      this.boss._skipNextAction = false;
+      this._log('boss',`${this.boss.name} 本回合无法行动`);
+      return;
+    }
+
+    const action = this.boss.getNextAction();
+    if (action === 'skill') {
+      const ctx = this._buildCtx();
+      var discardBefore = this.deck.discardPile.length;
+      const result = executeSkill(this.boss.skillId, ctx);
+      // 隐者封闭文案修正
+      var skillDesc = result.desc || '';
+      if (this.boss.skillId === 'hermit_seal') skillDesc = '封闭 — 下一次抽牌被禁止';
+      this._log('boss',`${this.boss.name} 发动技能: ${skillDesc}`);
+      // 弃牌技能: 显示被弃的牌(比较技能前后弃牌堆变化)
+      var discardAfter = this.deck.discardPile.length;
+      if (discardAfter > discardBefore) {
+        for (var di = discardBefore; di < discardAfter; di++) {
+          var dc = this.deck.discardPile[di];
+          if (dc) {
+            var dcLabel = dc.type === CardType.NUMBER
+              ? (ELEM_ICON[SUIT_TO_ELEMENT[dc.suit]] + SUIT_CN[dc.suit] + dc.pip)
+              : (SUIT_CN[dc.suit] + RANK_CN[dc.rank]);
+            this._log('system','弃置了: ' + dcLabel);
+          }
+        }
+      }
+      this._tutBossSkillSeen = true;
+
+      // 恶魔正位: 诅咒标记手牌
+      if (this.boss.skillId === 'devil_chain' && result.cardId) {
+        this._devilMark = result.cardId;
+        var markedCard = this.deck.hand.find(function(c){return c.id === result.cardId;});
+        if (markedCard) {
+          var ml = markedCard.type === CardType.NUMBER
+            ? (SUIT_CN[markedCard.suit] + markedCard.pip)
+            : (SUIT_CN[markedCard.suit] + RANK_CN[markedCard.rank]);
+          this._log('boss', '诅咒标记: ' + ml + ' (打出则下回合被禁止出牌)');
+        }
+      }
+
+      // 女皇逆位: 窒息最多2次，之后改为Boss攻击+1
+      if (this.boss.skillId === 'empress_suffocate') {
+        this._empressSuffocateCount++;
+        if (this._empressSuffocateCount > 2) {
+          // 超过2次: 恢复手牌上限，改为Boss攻击+1
+          this.deck.setHandLimit(this.deck.handLimit + 2);
+          this.boss._atkBonus = (this.boss._atkBonus||0) + 1;
+          skillDesc = '窒息 — 已达上限，Boss攻击+1';
+        } else {
+          // 正常触发: 弃置多余手牌
+          while (this.deck.hand.length > this.deck.handLimit) {
+            var exc = this.rng.pick(this.deck.hand);
+            if (exc) {
+              this.deck.discardById(exc.id);
+              this._log('system','窒息弃置: ' + this._cardName(exc));
+            }
+          }
+        }
+      }
+
+      // 星星正位: 启明 — 回复量上调至3HP
+      if (this.boss.skillId === 'star_light') {
+        // bundle已heal 2，补heal 1
+        this.boss.hp = Math.min(this.boss.maxHp, this.boss.hp + 1);
+        skillDesc = '启明 — Boss回复3HP，玩家抽1牌';
+      }
+
+      // 倒吊人逆位: 停滞 → 改为灵数封锁(抽到不触发灵数的牌)
+      if (this.boss.skillId === 'hangedman_stagnate') {
+        // 覆盖bundle的DRAW_BAN，改用自定义flag
+        this.status.removeFromPlayer(EffectType.DRAW_BAN);
+        this.boss._spiritBlockDraw = true;
+        skillDesc = '停滞 — 抽牌将不再触发灵数加成';
+      }
+
+      // 审判正位: 天启 — 变更元素为克制玩家最多元素
+      if (this.boss.skillId === 'judgement_revelation') {
+        var elemCount = {};
+        var handCards = this.deck.hand.filter(function(c){return c.type === CardType.NUMBER;});
+        for (var ei = 0; ei < handCards.length; ei++) {
+          var he = SUIT_TO_ELEMENT[handCards[ei].suit];
+          elemCount[he] = (elemCount[he]||0) + 1;
+        }
+        var maxElem = null, maxC = 0;
+        for (var ek in elemCount) {
+          if (elemCount[ek] > maxC) { maxC = elemCount[ek]; maxElem = ek; }
+        }
+        if (maxElem && COUNTER_MAP[maxElem]) {
+          var newElem = COUNTER_MAP[maxElem];
+          this.boss.element = newElem;
+          this._log('system', '天启: Boss元素变为 ' + ELEM_ICON[newElem] + ELEM_CN[newElem] + ' (克制你最多的' + ELEM_CN[maxElem] + ')');
+        }
+      }
+
+      // 世界正位: 大圆满额外造成2点伤害
+      if (this.boss.skillId === 'world_completion') {
+        this.player.takeDamage(2);
+        this._log('boss','大圆满附加: 2 点伤害');
+      }
+
+      // 皇帝暴政: 自伤HP下限1
+      if (this.boss.skillId === 'emperor_tyranny' || this.boss.skillId === 'chariot_crash') {
+        if (this.boss.hp < 1) this.boss.hp = 1;
+      }
+
+      if (result.requireChoice) {
+        if (result.revealed) this._pendingChoice = result;
+        else if (result.choiceType === 'tempt') this._pendingChoice = result;
+      }
+      if (result.requireAutoPlay) this._autoPlay = true;
+    } else {
+      const dmg = this.boss.getAttackDamage();
+      this.player.takeDamage(dmg);
+      this._log('boss',`${this.boss.name} 普通攻击: ${dmg} 点伤害`);
+    }
+  },
+
+  /* ========== 玩家操作 ========== */
+  selectNumber(cardId) {
+    this.selectedNumber = (this.selectedNumber === cardId) ? null : cardId;
+    this._renderHand();
+    this._updatePreview();
+  },
+  selectCourt(cardId) {
+    if (this.status.playerHas(EffectType.COURT_SEAL)) return;
+    this.selectedCourt = (this.selectedCourt === cardId) ? null : cardId;
+    this._renderHand();
+    this._updatePreview();
+  },
+
+  play() {
+    if (!this.selectedNumber || this._inputLocked) return;
+    this._executePlayerTurn();
+  },
+
+  skip() {
+    if (this._inputLocked) return;
+    this.player.takeDamage(1);
+    this._log('player','跳过本回合 (-1 HP)');
+    if (!this.player.isAlive()) return this._endBattle(false);
+    this._settleTurn();
+  },
+
+  _executePlayerTurn() {
+    let numberCardId = this.selectedNumber;
+
+    // 月亮迷雾: 随机出牌
+    if (this._autoPlay) {
+      const nc = this.deck.getNumberCards();
+      if (nc.length > 0) numberCardId = this.rng.pick(nc).id;
+      this._autoPlay = false;
+      this._log('system','迷雾中随机出牌...');
+    }
+
+    // 皇帝敕令: 强制打最大
+    if (this.status.playerHas(EffectType.FORCE_MAX_CARD)) {
+      const nc = this.deck.getNumberCards();
+      if (nc.length > 0) { nc.sort((a,b)=>b.pip-a.pip); numberCardId = nc[0].id; }
+      this._log('system','敕令生效: 强制打出最大点数牌');
+    }
+
+    const card = this.deck.hand.find(c => c.id === numberCardId);
+    if (!card) return;
+
+    // 恶魔诅咒: 打出被标记的牌则下回合禁止出牌
+    if (this._devilMark && numberCardId === this._devilMark) {
+      this._playerSkipNext = true;
+      this._devilMark = null;
+      this._log('system','诅咒触发! 下回合将被禁止出牌');
+    } else if (this._devilMark) {
+      this._devilMark = null; // 打了其他牌，诅咒解除
+    }
+
+    // 花色封锁
+    if (this.status.isSuitLocked(card.suit)) {
+      this._log('system',`${SUIT_CN[card.suit]}被封锁，无法打出`);
+      return;
+    }
+    // 恋人分离: 奇偶锁
+    var oeCheck = this.status.getPlayerEffect(EffectType.ODD_EVEN_LOCK);
+    if (oeCheck) {
+      var cardIsOdd = card.pip % 2 === 1;
+      if ((oeCheck.group === 'odd' && !cardIsOdd) || (oeCheck.group === 'even' && cardIsOdd)) {
+        this._log('system','分离限制: 只能使用' + (oeCheck.group === 'odd' ? '奇数' : '偶数') + '牌');
+        return;
+      }
+    }
+
+    // 教义检查: 不同花色伤害-1(不再阻止出牌)
+    var dogmaPenalty = 0;
+    if (this.boss._dogmaActive && this.player.lastPlayedSuit &&
+        card.suit !== this.player.lastPlayedSuit) {
+      dogmaPenalty = -1;
+      this._log('system',`教义: 非同花色, 伤害-1`);
+    }
+
+    // 献祭: 攻击前弃牌
+    if (this.status.playerHas(EffectType.SACRIFICE)) {
+      const d = this.deck.discardRandom();
+      if (d) this._log('system',`献祭: 弃掉 ${this._cardName(d)}`);
+    }
+
+    this.deck.playCard(numberCardId);
+
+    // 宫廷牌
+    let courtBuff = {};
+    let courtCard = null;
+    if (this.selectedCourt && !this.status.playerHas(EffectType.COURT_SEAL)) {
+      courtCard = this.deck.hand.find(c => c.id === this.selectedCourt);
+      if (courtCard) {
+        courtBuff = CourtCardLogic.resolve(courtCard, card, this.boss.alignment);
+        this.deck.playCard(this.selectedCourt);
+        this._tutCourtUsed = true;
+
+        // 国王翻转
+        if (courtBuff.flipAlignment) {
+          const pr = this._triggerPassive('onKingFlip');
+          if (pr && pr.immune) {
+            this._log('system','正义裁定: 免疫翻转');
+            courtBuff.flipAlignment = false;
+          } else {
+            this.boss.flipAlignment();
+            this._log('player',`国王翻转Boss至${ALIGN_CN[this.boss.alignment]}`);
+            if (courtBuff.kingSkipBossTurn) this.boss._skipNextAction = true;
+          }
+        }
+      }
+    }
+
+    // 攻击元素
+    let attackElement = SUIT_TO_ELEMENT[card.suit];
+    if (courtBuff.elementChanged && courtBuff.newElement) {
+      attackElement = courtBuff.newElement;
+      this._log('player',`侍从转换元素为 ${ELEM_ICON[attackElement]}`);
+    }
+
+    // Boss元素
+    let bossElement = this.boss.element;
+    if (this.status.bossHas(EffectType.ELEMENT_HIDDEN)) bossElement = Element.NONE;
+
+    // 记录攻击元素(Bug修复: 被动需要此信息)
+    this._lastAttackElement = attackElement;
+    this._lastAttackCountered = ElementSystem.isCounter(attackElement, bossElement);
+    if (this._lastAttackCountered) this._tutCounterUsed = true;
+
+    // 骑士最优调整
+    if (courtCard && courtCard.rank === CourtRank.KNIGHT && courtBuff.pipMod) {
+      const adj = CourtCardLogic.knightBestAdjust(card.pip, Math.abs(courtBuff.pipMod), this.boss.alignment);
+      courtBuff.pipMod = adj.direction;
+      this._log('player',`骑士调节点数 ${card.pip}→${adj.bestPip}`);
+    }
+
+    // 王后修正
+    if (courtBuff.forceAlignment === '__queen_override__') {
+      const ep = Math.max(1, Math.min(10, card.pip + (courtBuff.pipMod||0)));
+      courtBuff.forceAlignment = (ep <= 5) ? Alignment.UPRIGHT : Alignment.REVERSED;
+    }
+
+    // 被动伤害修正
+    const ctx = this._buildCtx();
+    let passiveFn = null;
+    if (this.boss.passiveId) {
+      // 节制被动: 覆盖为伤害上限7
+      if (this.boss.passiveId === 'temperance_moderation') {
+        passiveFn = function(info) {
+          if (info.subtotal > 7) return 7 - info.subtotal;
+          return 0;
+        };
+      } else {
+        const pResult = triggerPassive(this.boss.passiveId, ctx, 'onDamageCalc');
+        if (typeof pResult === 'function') passiveFn = pResult;
+      }
+    }
+
+    // 计算伤害
+    const breakdown = DamageCalculator.calculate({
+      pip: card.pip, cardElement: attackElement, bossElement, bossAlignment: this.boss.alignment,
+      courtBuff, playerState: this.player, statusMgr: this.status, bossPassive: passiveFn
+    });
+
+    if (breakdown.alignmentBonus > 0) this._tutAlignUsed = true;
+
+    // 太阳普照buff
+    if (this.boss._playerAtkBuff) breakdown.total += this.boss._playerAtkBuff;
+
+    // 教义惩罚
+    if (dogmaPenalty) breakdown.total = Math.max(0, breakdown.total + dogmaPenalty);
+
+    // Boss护甲
+    let finalDamage = breakdown.total;
+    const armor = this.status.getBossArmor();
+    if (armor > 0) {
+      const absorbed = Math.min(armor, finalDamage);
+      this.status.reduceBossArmor(absorbed);
+      finalDamage -= absorbed;
+      if (absorbed > 0) {
+        this._log('system',`Boss护甲吸收 ${absorbed} 伤害`);
+        this.player.takeDamage(1);
+        this._log('boss','护甲反弹: 1 点伤害');
+      }
+    }
+
+    finalDamage = Math.max(0, finalDamage);
+    this.boss.takeDamage(finalDamage);
+    this._tutDamageDealt += finalDamage;
+
+    // 偏颇: 窃取元素克制加成
+    if (this.boss._stealElementBonus && breakdown.elementMod > 0) {
+      this.boss._atkBonus = (this.boss._atkBonus||0) + 2;
+      this._log('boss','偏颇: 窃取克制加成，Boss攻击+2');
+    }
+
+    this.player.recordSuitUsage(card.suit);
+
+        // 日志
+    let playDesc = '打出 ' + this._cardName(card);
+    if (courtCard) playDesc += ' + ' + this._cardName(courtCard);
+    this._log('player', playDesc);
+
+    let dmgParts = ['基础'+breakdown.baseDamage];
+    if (breakdown.elementMod !== 0) dmgParts.push('元素'+(breakdown.elementMod>0?'+':'')+breakdown.elementMod);
+    if (breakdown.alignmentBonus > 0) dmgParts.push('灵数+'+breakdown.alignmentBonus);
+    if (breakdown.courtBonus !== 0) dmgParts.push('宫廷'+(breakdown.courtBonus>0?'+':'')+breakdown.courtBonus);
+    if (breakdown.permanentBonus > 0) dmgParts.push('永久+'+breakdown.permanentBonus);
+    if (breakdown.passiveMod !== 0) dmgParts.push('被动'+(breakdown.passiveMod>0?'+':'')+breakdown.passiveMod);
+    if (breakdown.capApplied) dmgParts.push('(上限)');
+    this._log('damage','→ 造成 ' + finalDamage + ' 伤害 [' + dmgParts.join(' ') + ']');
+
+    this._triggerPassive('onPlayerAttack');
+
+    var counterDmg = this.status.getCounterDamage();
+    if (counterDmg > 0) {
+      var actual = counterDmg;
+      if (this.boss._unyieldingActive) actual = Math.floor(counterDmg * 1.5);
+      this.player.takeDamage(actual);
+      this._log('boss','反击: '+actual+' 点伤害');
+    }
+
+    if (this.boss._reflectPercent > 0) {
+      var ref = Math.floor(finalDamage * this.boss._reflectPercent);
+      if (ref > 0) { this.player.takeDamage(ref); this._log('boss','天秤反射: '+ref+' 点伤害'); }
+    }
+
+    // 教学目标在_settleTurn中统一检查
+    this._settleTurn();
+  },
+
+  _settleTurn: function() {
+    if (this.boss.isDefeated()) {
+      // 教学模式: 目标未完成则Boss不死，回满HP继续
+      if (this._tutLevel && !this._tutLevel.objectiveCheck(this)) {
+        this.boss.hp = this.boss.maxHp;
+        this._log('system', '教学目标尚未达成，Boss回复了生命值！请按提示完成目标。');
+      } else {
+        var revive = this._triggerPassive('onBossDefeated');
+        if (revive && revive.revived) {
+          this._log('boss', this.boss.name + ' 以 ' + revive.hp + 'HP 复活!');
+        } else {
+          this._log('system', '✦ ' + this.boss.name + ' 被击败!');
+          if (this._tutLevel) { this._checkTutorialObjective(); return; }
+          return this._endBattle(true);
+        }
+      }
+    }
+    if (!this.player.isAlive()) return this._endBattle(false);
+
+    if (!this.status.playerHas(EffectType.DRAW_BAN)) {
+      var drawn = this.deck.draw(1);
+      // 倒吊人停滞: 抽到的牌不能触发灵数 → swap
+      if (drawn.length > 0 && this.boss._spiritBlockDraw) {
+        var dc = drawn[0];
+        if (dc.type === CardType.NUMBER) {
+          var wouldTrigger = (this.boss.alignment==='upright' && dc.pip<=5) ||
+                             (this.boss.alignment==='reversed' && dc.pip>5);
+          if (wouldTrigger && this.deck.drawPile.length > 0) {
+            var swapped = false;
+            for (var si = this.deck.drawPile.length - 1; si >= 0; si--) {
+              var sc = this.deck.drawPile[si];
+              if (sc.type === CardType.NUMBER) {
+                var scTrigger = (this.boss.alignment==='upright' && sc.pip<=5) ||
+                                (this.boss.alignment==='reversed' && sc.pip>5);
+                if (!scTrigger) {
+                  // swap: put drawn back, take this one
+                  this.deck.drawPile[si] = dc;
+                  var hi = this.deck.hand.indexOf(dc);
+                  if (hi !== -1) this.deck.hand[hi] = sc;
+                  drawn[0] = sc;
+                  swapped = true;
+                  break;
+                }
+              }
+            }
+          }
+        }
+      }
+      if (drawn.length > 0) this._log('system', '抽到 ' + this._cardName(drawn[0]));
+    } else {
+      this._log('system','抽牌被禁止');
+    }
+
+    if (this._tutLevel && this.deck.hand.length < 2) {
+      var lv = this._tutLevel;
+      if (lv.fixedHand) {
+        for (var ci = 0; ci < lv.fixedHand.length; ci++) {
+          var c = lv.fixedHand[ci];
+          if (!this.deck.hand.find(function(h){return h.id===c.id;})) this.deck.addToHand(Object.assign({},c));
+          if (this.deck.hand.length >= 3) break;
+        }
+      }
+    }
+
+    var expired = this.status.tickAll();
+    for (var ei = 0; ei < expired.expiredPlayer.length; ei++) {
+      this._log('system', '状态消失: ' + expired.expiredPlayer[ei].type);
+    }
+    // 渲染玩家出牌结果，延迟后进入Boss回合
+    this._inputLocked = true;
+    this._renderAll();
+    var self = this;
+    setTimeout(function() {
+      self._inputLocked = false;
+      self._nextTurn();
+    }, 600);
+  },
+
+  _endBattle: function(won) {
+    this._renderAll();
+    if (this._tutLevel) { this._showResult(won); return; }
+    if (won) {
+      this.journey.defeatedBosses.push({
+        id:this.boss.id, name:this.boss.name,
+        element:this.boss.baseElement, skillId:this.boss.skillId,
+      });
+      this.journey.currentStage++;
+      if (this.journey.mode==='quick' || this.journey.currentStage >= this.journey.stages.length) {
+        this._showResult(true);
+      } else if (this.journey.mode==='short' && this.journey.currentStage <= 2) {
+        // 短旅途前2关胜利不给奖励，直接恢复HP进入下一战
+        this.player.restoreBetweenBattles(0.5);
+        this._startCurrentBattle();
+      } else {
+        this._showBlessing();
+      }
+    } else {
+      this._showResult(false);
+    }
+  },
+
+  _showBlessing: function() {
+    var options = BlessingSystem.getOptions(this.player);
+    var isShort = this.journey.mode === 'short';
+    // 短旅途调整
+    if (isShort) {
+      for (var oi2 = 0; oi2 < options.length; oi2++) {
+        var o = options[oi2];
+        if (o.id === 'star' && this.journey.currentStage <= 2) {
+          o.disabled = true; o.disabledReason = '第3关后解锁';
+        }
+        if (o.id === 'moon') { o.desc = '获得4点护盾（上限6）'; }
+        if (o.id === 'sun') { o.desc = '立即回复5HP'; }
+      }
+    }
+    var container = $('blessing-cards');
+    container.innerHTML = '';
+    for (var oi = 0; oi < options.length; oi++) {
+      var opt = options[oi];
+      var div = document.createElement('div');
+      div.className = 'blessing-card' + (opt.disabled ? ' disabled' : '');
+      div.innerHTML = '<h3>'+opt.name+'</h3><p>'+opt.desc+(opt.disabled?' ('+opt.disabledReason+')':'')+'</p>';
+      if (!opt.disabled) div.onclick = (function(id){return function(){Game._applyBlessing(id);};})(opt.id);
+      container.appendChild(div);
+    }
+    showScreen('screen-blessing');
+  },
+  _applyBlessing: function(id) {
+    var isShort = this.journey.mode === 'short';
+    if (isShort) {
+      // 短旅途: 护盾4(上限6)，回复5HP
+      if (id === 'moon') {
+        var newShield = Math.min(this.player.shield + 4, 6);
+        this.player.shield = newShield;
+      } else if (id === 'sun') {
+        this.player.heal(5);
+      } else {
+        BlessingSystem.apply(id, this.player);
+      }
+    } else {
+      BlessingSystem.apply(id, this.player);
+    }
+    if (isShort) this.player.restoreBetweenBattles(0.5);
+    this._startCurrentBattle();
+  },
+
+  _showResult: function(won) {
+    if (this._tutLevel) {
+      $('result-title').textContent = won ? '✓ 教学完成!' : '再试一下吧！';
+      $('result-title').style.color = won ? 'var(--gold)' : 'var(--hp-red)';
+      $('result-stats').innerHTML = won ? '你已学会: '+this._tutLevel.name : '记得仔细看看教学提示哦~';
+      $('result-back-btn').textContent = '返回教学';
+      $('result-back-btn').onclick = function(){ Game.startTutorialMenu(); };
+      showScreen('screen-result'); return;
+    }
+    $('result-back-btn').textContent = '返回主菜单';
+    $('result-back-btn').onclick = function(){ showScreen('screen-menu'); };
+    $('result-title').textContent = won ? '🌟 旅途完成!' : '💀 旅途终结';
+    $('result-title').style.color = won ? 'var(--gold)' : 'var(--hp-red)';
+    var stats = ['击败Boss: '+this.journey.defeatedBosses.length];
+    if (won && this.journey.mode==='short') stats.push('通关短旅途!');
+    stats.push('剩余HP: '+this.player.hp+'/'+this.player.maxHp);
+    $('result-stats').innerHTML = stats.join('<br>');
+    showScreen('screen-result');
+  },
+  backToMenu: function() { showScreen('screen-menu'); },
+
+  _showChoiceModal: function() {
+    var choice = this._pendingChoice;
+    if (!choice) return;
+    var modal = $('modal-choice');
+    var btns = $('modal-btns');
+    btns.innerHTML = '';
+    if (choice.revealed) {
+      $('modal-title').textContent = '抛择';
+      $('modal-desc').textContent = '选择一张加入手牌，另一张永久移除';
+      for (var ri = 0; ri < choice.revealed.length; ri++) {
+        var card = choice.revealed[ri];
+        var btn = document.createElement('button');
+        btn.className = 'modal-btn';
+        btn.textContent = '保留 ' + this._cardName(card);
+        btn.onclick = (function(c){return function(){
+          Game.deck.addToHand(c);
+          var other = choice.revealed.find(function(x){return x.id!==c.id;});
+          if (other) Game.deck.removedCards.push(other);
+          Game._pendingChoice=null; modal.classList.remove('active');
+          Game._executePlayerTurn();
+        };})(card);
+        btns.appendChild(btn);
+      }
+    } else if (choice.choiceType === 'tempt') {
+      $('modal-title').textContent = '诱惑';
+      $('modal-desc').textContent = '受5点伤害，换取抽3张牌？';
+      var y = document.createElement('button'); y.className='modal-btn'; y.textContent='接受交易';
+      y.onclick = function() {
+        var drawCount = Math.min(3, Game.deck.handLimit - Game.deck.hand.length);
+        Game.player.takeDamage(5);
+        if (drawCount > 0) Game.deck.draw(drawCount);
+        Game.player.acceptedTempt=true;
+        Game._log('player','接受诱惑: -5HP, +' + drawCount + '手牌');
+        Game._pendingChoice=null; modal.classList.remove('active');
+        if (!Game.player.isAlive()) { Game._endBattle(false); return; }
+        Game._renderAll();
+      };
+      var n = document.createElement('button'); n.className='modal-btn'; n.textContent='拒绝';
+      n.onclick = function() {
+        Game._pendingChoice=null; modal.classList.remove('active');
+        Game._renderAll();
+      };
+      btns.appendChild(y); btns.appendChild(n);
+    }
+    modal.classList.add('active');
+  },
+
+  _buildCtx: function() {
+    return {
+      player:this.player, boss:this.boss, deck:this.deck,
+      status:this.status, rng:this.rng, turnNumber:this.turn,
+      journey:this.journey,
+      lastPlayedElement: this.player.lastPlayedSuit ? SUIT_TO_ELEMENT[this.player.lastPlayedSuit] : null,
+      lastAttackCountered: this._lastAttackCountered,
+      lastAttackElement: this._lastAttackElement,
+      emit: function(){}
+    };
+  },
+
+  _triggerPassive: function(trigger) {
+    if (!this.boss || !this.boss.passiveId) return null;
+    var ctx = this._buildCtx();
+    return triggerPassive(this.boss.passiveId, ctx, trigger);
+  },
+
+  _cardName: function(card) {
+    if (!card) return '?';
+    var elem = card.suit ? SUIT_TO_ELEMENT[card.suit] : 'none';
+    if (card.type === CardType.NUMBER) return ELEM_ICON[elem]+SUIT_CN[card.suit]+card.pip;
+    if (card.type === CardType.COURT) return ELEM_ICON[elem]+RANK_CN[card.rank];
+    return card.id;
+  },
+
+  _log: function(type, text) { this.battleLog.push({type:type, text:text}); },
+
+  _getPassiveDesc: function(pid) {
+    var map = {
+      magician_table:'四元素台: 使用花色种数=Boss攻击加成',
+      priestess_moonShadow:'月影: 连续2回合未克制→Boss回2HP',
+      empress_nurture:'孕育: 受攻击50%概率让你抽1牌',
+      emperor_crown:'王权: 风克制修正降低',
+      hierophant_precept:'戒律: Ace伤害+50%',
+      lovers_resonance:'共鸣: 连续2张同花色第二张+3',
+      chariot_crush:'碾压: 伤害≤1时无效',
+      strength_unyielding:'不屈: HP<30%时反击×1.5',
+      hermit_lantern:'灯火: 开局预览3回合行动',
+      wheel_karma:'因果: 连续同花色→Boss攻击+3',
+      justice_verdict:'裁定: 免疫国王翻转',
+      hangedman_invert:'倒悬: 克制关系反转(整场)',
+      death_undying:'不灭: 首次击杀后4HP复活',
+      temperance_moderation:'中庸: 伤害上限7',
+      devil_obsession:'执念: 接受诱惑后Boss攻击+2',
+      tower_rebirth:'逢生: 被击败时玩家回5HP+抽1牌',
+      star_glow:'星辉: 被击败时玩家回3HP',
+      moon_tide:'潮汐: 奇数回合攻击+2，偶数-1',
+      sun_brilliance:'辉耀: 免疫元素克制(整场)',
+      judgement_finalTrial:'终审: 审判被动',
+      world_mirror:'旅途之镜: Boss元素=你最少用花色',
+    };
+    return map[pid] || null;
+  },
+
+  _updatePreview: function() {
+    var bar = $('preview-bar');
+    if (!this.selectedNumber) {
+      bar.textContent = '选择数字牌查看伤害预览';
+      bar.style.color = 'var(--text2)';
+      return;
+    }
+    var card = this.deck.hand.find(function(c){return c.id===Game.selectedNumber;});
+    if (!card) return;
+
+    var courtCard = null, courtBuff = {};
+    if (this.selectedCourt) {
+      courtCard = this.deck.hand.find(function(c){return c.id===Game.selectedCourt;});
+      if (courtCard) courtBuff = CourtCardLogic.resolve(courtCard, card, this.boss.alignment);
+    }
+
+    if (courtCard && courtCard.rank === CourtRank.KNIGHT && courtBuff.pipMod) {
+      var adj = CourtCardLogic.knightBestAdjust(card.pip, Math.abs(courtBuff.pipMod), this.boss.alignment);
+      courtBuff.pipMod = adj.direction;
+    }
+    if (courtBuff.forceAlignment === '__queen_override__') {
+      var ep = Math.max(1,Math.min(10, card.pip+(courtBuff.pipMod||0)));
+      courtBuff.forceAlignment = (ep<=5) ? Alignment.UPRIGHT : Alignment.REVERSED;
+    }
+
+    var attackElem = SUIT_TO_ELEMENT[card.suit];
+    if (courtBuff.elementChanged && courtBuff.newElement) attackElem = courtBuff.newElement;
+    var bossElem = this.boss.element;
+    if (this.status.bossHas(EffectType.ELEMENT_HIDDEN)) bossElem = Element.NONE;
+
+    var ctx = this._buildCtx();
+    var passiveFn = null;
+    if (this.boss.passiveId) {
+      var r = triggerPassive(this.boss.passiveId, Object.assign({},ctx,{lastAttackElement:attackElem}), 'onDamageCalc');
+      if (typeof r === 'function') passiveFn = r;
+    }
+
+    var bd = DamageCalculator.calculate({
+      pip:card.pip, cardElement:attackElem, bossElement:bossElem,
+      bossAlignment:this.boss.alignment, courtBuff:courtBuff, playerState:this.player,
+      statusMgr:this.status, bossPassive:passiveFn
+    });
+
+    var total = bd.total;
+    if (this.boss._playerAtkBuff) total += this.boss._playerAtkBuff;
+    var bossArmor = this.status.getBossArmor();
+    if (bossArmor > 0) total = Math.max(0, total - bossArmor);
+    total = Math.max(0, total);
+
+    var parts = ['基础'+bd.baseDamage];
+    if (bd.elementMod !== 0) parts.push('元素'+(bd.elementMod>0?'+':'')+bd.elementMod);
+    if (bd.alignmentBonus > 0) parts.push('灵数+'+bd.alignmentBonus);
+    if (bd.courtBonus !== 0) parts.push('宫廷'+(bd.courtBonus>0?'+':'')+bd.courtBonus);
+    if (bd.permanentBonus > 0) parts.push('永久+'+bd.permanentBonus);
+    if (bd.passiveMod !== 0) parts.push('被动'+(bd.passiveMod>0?'+':'')+bd.passiveMod);
+
+    var courtDesc = '';
+    if (courtCard) {
+      var same = SUIT_TO_ELEMENT[courtCard.suit] === SUIT_TO_ELEMENT[card.suit];
+      var key = courtCard.rank + (same?'_same':'_diff');
+      courtDesc = ' | ' + RANK_CN[courtCard.rank] + ': ' + COURT_EFFECT_CN[key];
+    }
+
+    bar.style.color = 'var(--gold2)';
+    bar.textContent = '预计伤害: '+total+' ['+parts.join(' ')+']'+courtDesc;
+  },
+
+  _renderAll: function() {
+    this._renderBoss();
+    this._renderPlayer();
+    this._renderHand();
+    this._renderLog();
+    this._renderJourney();
+    this._renderHint();
+    this._updatePreview();
+  },
+
+  _renderBoss: function() {
+    var b = this.boss;
+    var roman = ['0','I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII','XIII','XIV','XV','XVI','XVII','XVIII','XIX','XX','XXI'];
+    $('boss-name').textContent = ELEM_ICON[b.element]+' '+(roman[b.id]||b.id)+' '+b.name;
+    var alignEl = $('boss-align');
+    alignEl.textContent = ALIGN_CN[b.alignment];
+    alignEl.className = 'boss-align ' + b.alignment;
+    $('boss-sub').textContent = b.data.nameEn + ' · ' + b.data.theme;
+    var hpPct = Math.max(0, b.hp / b.maxHp * 100);
+    $('boss-hp-bar').style.width = hpPct+'%';
+    var bossArmor = this.status.getBossArmor();
+    $('boss-hp-text').textContent = b.hp+'/'+b.maxHp + (bossArmor > 0 ? ' 🛡'+bossArmor : '');
+  },
+
+  _renderPlayer: function() {
+    var p = this.player;
+    $('player-hp-text').textContent = p.hp+'/'+p.maxHp;
+    $('player-hp-bar').style.width = (p.hp/p.maxHp*100)+'%';
+    var sh = $('player-shield');
+    if (p.shield > 0) { sh.style.display=''; sh.textContent='🛡'+p.shield; }
+    else sh.style.display='none';
+
+    var tags = [];
+    if (this.status.playerHas(EffectType.COURT_SEAL)) tags.push('封印宫廷');
+    if (this.status.playerHas(EffectType.DRAW_BAN)) tags.push('禁抽牌');
+    if (this.status.playerHas(EffectType.ELEMENT_IMMUNE)) tags.push('元素免疫');
+    if (this.status.playerHas(EffectType.ELEMENT_INVERT)) tags.push('克制反转');
+    if (this.status.playerHas(EffectType.DAMAGE_CAP)) tags.push('伤害上限'+this.status.getDamageCap());
+    if (this.status.playerHas(EffectType.COUNTER_ATTACK)) tags.push('反击'+this.status.getCounterDamage());
+    if (this.status.playerHas(EffectType.SACRIFICE)) tags.push('献祭');
+    if (this.status.playerHas(EffectType.CORRODE)) tags.push('腐蚀');
+    var oeStatus = this.status.getPlayerEffect(EffectType.ODD_EVEN_LOCK);
+    if (oeStatus) tags.push('分离:'+(oeStatus.group==='odd'?'仅奇数':'仅偶数'));
+    if (this.status.playerHas(EffectType.SUIT_LOCK)) {
+      this.status.playerEffects.filter(function(e){return e.type===EffectType.SUIT_LOCK;})
+        .forEach(function(l) { tags.push('封锁'+(SUIT_CN[l.suit]||l.suit)); });
+    }
+    if (this.status.playerHas(EffectType.ALL_BONUS_CANCEL)) tags.push('加成取消');
+    var fear = this.status.getFearDamage();
+    if (fear > 0) tags.push('恐惧x'+fear);
+    if (this.player.starBlessing) tags.push('⭐+1');
+    if (this.boss._spiritBlockDraw) tags.push('停滞(灵数封锁)');
+    if (this.boss._dogmaActive) tags.push('教义(同花色)');
+    $('player-status').innerHTML = tags.map(function(t){return '<span class="status-tag">'+t+'</span>';}).join('');
+  },
+
+  _renderHand: function() {
+    var numberCards = this.deck.hand.filter(function(c){return c.type===CardType.NUMBER;});
+    var courtCards = this.deck.hand.filter(function(c){return c.type===CardType.COURT;});
+    var courtSealed = this.status.playerHas(EffectType.COURT_SEAL);
+
+    $('hand-count').textContent = '('+this.deck.hand.length+'/'+this.deck.handLimit+')';
+
+    var forceMax = this.status.playerHas(EffectType.FORCE_MAX_CARD);
+    var maxPip = 0;
+    if (forceMax) {
+      for (var mi = 0; mi < numberCards.length; mi++) {
+        if (numberCards[mi].pip > maxPip) maxPip = numberCards[mi].pip;
+      }
+    }
+    $('number-hand').innerHTML = numberCards.map(function(c) {
+      var elem = SUIT_TO_ELEMENT[c.suit];
+      var locked = Game.status.isSuitLocked(c.suit);
+      if (forceMax && c.pip < maxPip) locked = true;
+      // 恋人分离: 奇偶锁
+      var oeEffect = Game.status.getPlayerEffect(EffectType.ODD_EVEN_LOCK);
+      if (oeEffect) {
+        var isOdd = c.pip % 2 === 1;
+        if ((oeEffect.group === 'odd' && !isOdd) || (oeEffect.group === 'even' && isOdd)) locked = true;
+      }
+      var sel = Game.selectedNumber === c.id;
+      var cursed = Game._devilMark === c.id;
+      return '<button class="card-btn '+elem+(sel?' selected':'')+(locked?' disabled':'')+(cursed?' cursed':'')+'"'
+        +' onclick="Game.selectNumber(\''+c.id+'\')"'+(locked?' disabled':'')+'>'
+        +'<div class="card-pip">'+c.pip+(cursed?' 💀':'')+'</div>'
+        +'<div class="card-elem">'+ELEM_ICON[elem]+ELEM_CN[elem]+'</div>'
+        +'<div class="card-suit">'+SUIT_CN[c.suit]+'</div>'
+        +'</button>';
+    }).join('');
+
+    $('court-hand').innerHTML = courtCards.map(function(c) {
+      var elem = SUIT_TO_ELEMENT[c.suit];
+      var sel = Game.selectedCourt === c.id;
+      var descKey = c.rank + '_diff';
+      return '<button class="card-btn '+elem+(sel?' selected':'')+(courtSealed?' disabled':'')+'"'
+        +' onclick="Game.selectCourt(\''+c.id+'\')"'+(courtSealed?' disabled':'')+'>'
+        +'<div class="card-pip">'+RANK_CN[c.rank]+'</div>'
+        +'<div class="card-elem">'+ELEM_ICON[elem]+ELEM_CN[elem]+'</div>'
+        +'<div class="court-desc">'+COURT_EFFECT_CN[descKey]+'</div>'
+        +'</button>';
+    }).join('');
+
+    $('btn-play').disabled = !this.selectedNumber || this._inputLocked;
+    if ($('btn-skip')) $('btn-skip').disabled = this._inputLocked;
+  },
+
+  _renderLog: function() {
+    var el = $('battle-log');
+    var cm = {boss:'log-boss',player:'log-player',system:'log-system',damage:'log-damage'};
+    el.innerHTML = this.battleLog.map(function(e) {
+      if (e.text.charAt(0)==='\n') return '<div class="log-divider"></div><span class="'+(cm[e.type]||'')+'">'+e.text.trim()+'</span>';
+      return '<div class="'+(cm[e.type]||'')+'">'+e.text+'</div>';
+    }).join('');
+    el.scrollTop = el.scrollHeight;
+  },
+
+  _renderJourney: function() {
+    if (!this.journey || this.journey.mode==='quick' || this.journey.mode==='tutorial') {
+      $('journey-bar').style.display='none'; return;
+    }
+    $('journey-bar').style.display='';
+    var dots = this.journey.stages.map(function(s,i) {
+      var cls='journey-dot';
+      if (i < Game.journey.currentStage) cls+=' done';
+      else if (i === Game.journey.currentStage) cls+=' current';
+      var b = getBossById(s.bossId);
+      return '<div class="'+cls+'" title="'+(b?b.name:'')+'"></div>';
+    });
+    $('journey-bar').innerHTML = dots.join('');
+  },
+
+  _renderHint: function() {
+    var bar = $('hint-bar');
+    if (!this._tutLevel) { bar.style.display='none'; return; }
+    bar.style.display='';
+    bar.innerHTML = '<div class="hint-obj">目标: '+this._tutLevel.objective+'</div>'+this._tutLevel.hint;
+  },
+};
+</script>
+</body>
+</html>
