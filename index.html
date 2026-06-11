@@ -451,7 +451,7 @@ function renderRules(){
   <div class="rules-section"><h3>基础流程</h3><p>
     每回合: Boss先行动(技能或普攻) → 玩家出1张数字牌(可附加1张宫廷牌) → 结算伤害 → 抽1牌。<br>
     玩家25HP, 初始5张手牌, 上限8张。Boss普攻固定3伤害。击败Boss即胜利。<br>
-    跳过回合会扣除1点HP。若手牌已满且全为宫廷牌, 跳过时会随机弃置1张宫廷牌再抽牌。
+    跳过回合会扣除1点HP(手牌全为宫廷牌时不扣除)。若手牌已满且全为宫廷牌, 跳过时会随机弃置1张宫廷牌再抽牌。
   </p></div>
   <div class="rules-section"><h3>元素与克制</h3><p>
     四元素循环克制: 火→风→土→水→火<br>
@@ -888,6 +888,13 @@ const Game = {
       if (this.boss.skillId === 'devil_chain' && result.cardId) {
         skillDesc = '锁链 — 诅咒标记你的1张手牌';
       }
+      // 节制正位|调和: 伤害上限改为玩家实时最大生命值的30%(向下取整)
+      if (this.boss.skillId === 'temperance_harmony') {
+        var capEff = this.status.getPlayerEffect(EffectType.DAMAGE_CAP);
+        var capVal = Math.floor(this.player.maxHp * 0.3);
+        if (capEff) capEff.value = capVal;
+        skillDesc = '调和 — 单回合伤害上限' + capVal + ' (你最大生命的30%)';
+      }
       // 恋人正位|抛择 → 更名"抉择"
       if (this.boss.skillId === 'lovers_choice') {
         skillDesc = '抉择 — 翻出2张牌，请选择';
@@ -1034,8 +1041,14 @@ const Game = {
 
   skip() {
     if (this._inputLocked) return;
-    this.player.takeDamage(1);
-    this._log('player','跳过本回合 (-1 HP)');
+    // 手牌全为宫廷牌时, 跳过不扣HP
+    var onlyCourts = this.deck.hand.length > 0 && this.deck.getNumberCards().length === 0;
+    if (onlyCourts) {
+      this._log('player','跳过本回合 (手牌均为宫廷牌, 不扣HP)');
+    } else {
+      this.player.takeDamage(1);
+      this._log('player','跳过本回合 (-1 HP)');
+    }
     // 防卡关: 仅当手牌达到上限且全为宫廷牌时, 跳过会随机弃置1张宫廷牌,
     // 腾出手牌位以便回合结束时正常抽牌, 避免满手宫廷牌的死局
     if (this.deck.getNumberCards().length === 0 && this.deck.hand.length >= this.deck.handLimit) {
@@ -1169,10 +1182,11 @@ const Game = {
     const ctx = this._buildCtx();
     let passiveFn = null;
     if (this.boss.passiveId) {
-      // 节制被动: 覆盖为伤害上限7
+      // 节制被动: 覆盖为伤害上限=玩家实时最大生命值的30%(向下取整)
       if (this.boss.passiveId === 'temperance_moderation') {
         passiveFn = function(info) {
-          if (info.subtotal > 7) return 7 - info.subtotal;
+          var modCap = Math.floor(Game.player.maxHp * 0.3);
+          if (info.subtotal > modCap) return modCap - info.subtotal;
           return 0;
         };
       } else {
@@ -1589,7 +1603,7 @@ const Game = {
       justice_verdict:'裁定: 免疫国王翻转',
       hangedman_invert:'倒悬: 克制关系反转(整场)',
       death_undying:'不灭: 首次击杀后4HP复活',
-      temperance_moderation:'中庸: 伤害上限7',
+      temperance_moderation:'中庸: 伤害上限=你最大生命的30%(向下取整)',
       devil_obsession:'执念: 接受诱惑后Boss攻击+2',
       tower_rebirth:'逢生: 被击败时玩家回5HP+抽1牌',
       star_glow:'星辉: 被击败时玩家回3HP',
