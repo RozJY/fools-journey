@@ -129,10 +129,10 @@ var FoolsJourney = (() => {
         [Suit.PENTACLES]: Element.EARTH
       });
       var COUNTER_MAP = Object.freeze({
-        [Element.FIRE]: Element.EARTH,
+        [Element.FIRE]: Element.WIND,
+        [Element.WIND]: Element.EARTH,
         [Element.EARTH]: Element.WATER,
-        [Element.WATER]: Element.WIND,
-        [Element.WIND]: Element.FIRE
+        [Element.WATER]: Element.FIRE
       });
       var ALL_ELEMENTS = Object.freeze([Element.FIRE, Element.WATER, Element.WIND, Element.EARTH]);
       var ALL_SUITS = Object.freeze([Suit.WANDS, Suit.CUPS, Suit.SWORDS, Suit.PENTACLES]);
@@ -1683,7 +1683,7 @@ var FoolsJourney = (() => {
       Passives["emperor_crown"] = (ctx, trigger) => {
         if (trigger === "onDamageCalc") {
           return (info) => {
-            if (ctx.lastAttackElement === Element.WIND) return -1;
+            if (ctx.lastAttackElement === Element.WATER) return -1;
             return 0;
           };
         }

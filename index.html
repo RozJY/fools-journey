@@ -7,141 +7,263 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 :root{
-  --bg:#242445;--bg2:#1e2d50;--bg3:#1a4a78;
-  --gold:#c8a951;--gold2:#f5d78e;
-  --text:#e8e8e8;--text2:#a0a0b0;
-  --fire:#e74c3c;--water:#3498db;--wind:#2ecc71;--earth:#f39c12;
-  --hp-green:#27ae60;--hp-red:#c0392b;
-  --card-bg:#1e2d4a;--card-border:#3a4f7a;--card-sel:#c8a951;
+  --bg:#0c0918;
+  --panel:#1c1535;--panel2:#251b48;--panel3:#2f2358;
+  --gold:#d4af37;--gold2:#f3dd9a;--gold-dim:#7a6529;--gold-line:rgba(212,175,55,.4);
+  --text:#efe9da;--text2:#a59cc0;
+  --fire:#ff6e50;--water:#54a9ff;--wind:#5ee0a0;--earth:#eaa83e;
+  --hp-green:#3ddc84;--hp-red:#e0484f;
+  --card-bg:#1d1640;--card-border:#473a7d;--card-sel:#d4af37;
+  --serif:'STZhongsong','STSong','Noto Serif SC','SimSun',Georgia,serif;
 }
-html,body{height:100%;background:var(--bg);color:var(--text);font-family:'PingFang SC','Microsoft YaHei',sans-serif;overflow:hidden;}
-#app{max-width:420px;margin:0 auto;height:100%;display:flex;flex-direction:column;position:relative;}
+html,body{height:100%;background:#070512;color:var(--text);font-family:'PingFang SC','Microsoft YaHei',sans-serif;overflow:hidden;}
+/* 星云背景 */
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;
+  background:
+    radial-gradient(ellipse 90% 55% at 50% -12%,rgba(88,61,160,.38),transparent 62%),
+    radial-gradient(ellipse 60% 42% at 88% 100%,rgba(46,26,90,.5),transparent 65%),
+    radial-gradient(ellipse 52% 36% at 8% 78%,rgba(120,60,140,.2),transparent 60%),
+    linear-gradient(180deg,#0d0a1d 0%,#0a0716 55%,#0c0820 100%);
+}
+/* 星辰 */
+body::after{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:
+    radial-gradient(1px 1px at 12% 22%,rgba(255,255,255,.7),transparent 50%),
+    radial-gradient(1.5px 1.5px at 78% 12%,rgba(255,240,200,.8),transparent 50%),
+    radial-gradient(1px 1px at 35% 64%,rgba(255,255,255,.5),transparent 50%),
+    radial-gradient(2px 2px at 88% 45%,rgba(212,175,55,.7),transparent 50%),
+    radial-gradient(1px 1px at 55% 8%,rgba(255,255,255,.6),transparent 50%),
+    radial-gradient(1.5px 1.5px at 8% 82%,rgba(255,255,255,.55),transparent 50%),
+    radial-gradient(1px 1px at 68% 86%,rgba(255,240,200,.5),transparent 50%),
+    radial-gradient(1px 1px at 92% 72%,rgba(255,255,255,.45),transparent 50%),
+    radial-gradient(1.5px 1.5px at 25% 40%,rgba(212,175,55,.5),transparent 50%),
+    radial-gradient(1px 1px at 45% 92%,rgba(255,255,255,.5),transparent 50%),
+    radial-gradient(1px 1px at 62% 33%,rgba(255,255,255,.4),transparent 50%),
+    radial-gradient(1.5px 1.5px at 16% 55%,rgba(255,255,255,.5),transparent 50%);
+  animation:twinkle 6s ease-in-out infinite alternate;
+}
+@keyframes twinkle{from{opacity:.45;}to{opacity:1;}}
+
+#app{max-width:420px;margin:0 auto;height:100%;display:flex;flex-direction:column;position:relative;z-index:1;
+  border-left:1px solid rgba(212,175,55,.1);border-right:1px solid rgba(212,175,55,.1);
+  box-shadow:0 0 60px rgba(0,0,0,.7);}
 .screen{display:none;flex-direction:column;height:100%;width:100%;}
-.screen.active{display:flex;}
+.screen.active{display:flex;animation:screenIn .45s ease both;}
+@keyframes screenIn{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:none;}}
 
 /* --- 菜单 --- */
 #screen-menu{justify-content:center;align-items:center;gap:16px;padding:30px 24px;text-align:center;}
-#screen-menu h1{font-size:32px;color:var(--gold);letter-spacing:4px;}
-#screen-menu h2{font-size:14px;color:var(--text2);margin-top:-4px;letter-spacing:2px;}
-.menu-btn{width:80%;padding:14px;border:1px solid var(--gold);background:transparent;color:var(--gold);font-size:17px;border-radius:8px;cursor:pointer;transition:all .2s;}
-.menu-btn:active{background:var(--gold);color:var(--bg);}
-.menu-btn.secondary{border-color:var(--bg3);color:var(--text2);font-size:15px;padding:10px;}
-.menu-btn.secondary:active{background:var(--bg3);color:var(--text);}
-.menu-sub{font-size:12px;color:var(--text2);margin-top:-6px;}
+#screen-menu h1{
+  font-family:var(--serif);font-size:42px;font-weight:700;letter-spacing:10px;text-indent:10px;
+  background:linear-gradient(180deg,#f9ecbe 0%,#e8c662 45%,#b98e22 75%,#e8c662 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 0 16px rgba(212,175,55,.35));
+}
+#screen-menu h2{font-size:13px;color:var(--text2);margin-top:-6px;letter-spacing:5px;font-family:Georgia,serif;font-style:italic;}
+.menu-deco{color:var(--gold-dim);font-size:13px;letter-spacing:3px;margin:2px 0;}
+.menu-btn{
+  width:82%;padding:14px;border:1px solid var(--gold-line);
+  background:linear-gradient(180deg,rgba(212,175,55,.12),rgba(212,175,55,.03));
+  color:var(--gold2);font-size:17px;border-radius:10px;cursor:pointer;transition:all .25s;
+  font-family:var(--serif);letter-spacing:4px;position:relative;
+  box-shadow:0 2px 12px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.06);
+}
+.menu-btn:hover{border-color:var(--gold);box-shadow:0 2px 16px rgba(212,175,55,.25);}
+.menu-btn:active{background:var(--gold);color:#1a1230;transform:scale(.98);}
+.menu-btn.secondary{border-color:rgba(165,156,192,.3);color:var(--text2);font-size:14px;padding:10px;letter-spacing:2px;background:rgba(255,255,255,.02);}
+.menu-btn.secondary:active{background:var(--panel3);color:var(--text);}
+.menu-sub{font-size:12px;color:var(--text2);margin-top:-8px;opacity:.8;}
 
 /* --- 战斗 --- */
 #screen-battle{padding:8px 10px;gap:5px;}
-.boss-area{background:var(--bg2);border-radius:10px;padding:10px 12px;}
-.boss-header{display:flex;justify-content:space-between;align-items:center;}
-.boss-name{font-size:16px;font-weight:bold;}
-.boss-align{font-size:12px;padding:2px 8px;border-radius:4px;font-weight:bold;}
-.boss-align.upright{background:#2d6a4f;color:#95d5b2;}
-.boss-align.reversed{background:#6a2d2d;color:#d5959f;}
-.boss-sub{font-size:11px;color:var(--text2);margin:2px 0 6px;}
-.hp-bar-wrap{height:16px;background:#111;border-radius:8px;overflow:hidden;position:relative;}
-.hp-bar{height:100%;border-radius:8px;transition:width .4s;}
-.hp-bar.boss{background:linear-gradient(90deg,var(--hp-red),#e74c3c);}
-.hp-bar.player{background:linear-gradient(90deg,var(--hp-green),#2ecc71);}
-.hp-text{position:absolute;right:6px;top:0;line-height:16px;font-size:11px;font-weight:bold;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.6);}
-
-.log-area{flex:1;min-height:0;background:var(--bg2);border-radius:10px;padding:10px;overflow-y:auto;font-size:13px;line-height:1.7;}
-.log-area::-webkit-scrollbar{width:4px;}
-.log-area::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:2px;}
-.log-boss{color:#ff7675;}
-.log-player{color:#55efc4;}
-.log-system{color:var(--text2);}
-.log-damage{color:#fdcb6e;font-weight:bold;}
-.log-divider{border-top:1px solid var(--bg3);margin:6px 0;}
-
-.player-bar{display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:4px 0;}
-.player-hp-label{display:flex;align-items:center;gap:6px;}
-.shield-badge{background:#3498db;padding:1px 6px;border-radius:4px;font-size:11px;}
-.status-icons{display:flex;gap:4px;font-size:11px;flex-wrap:wrap;}
-.status-tag{padding:1px 5px;border-radius:3px;background:var(--bg3);color:var(--text2);}
-
-.hand-section{background:var(--bg2);border-radius:10px;padding:8px;}
-.hand-label{font-size:11px;color:var(--text2);margin-bottom:4px;}
-.hand-row{display:flex;flex-wrap:wrap;gap:5px;}
-.card-btn{
-  min-width:54px;padding:5px 4px 4px;border:2px solid var(--card-border);background:var(--card-bg);
-  color:var(--text);font-size:13px;border-radius:6px;cursor:pointer;text-align:center;
-  transition:all .15s;line-height:1.2;position:relative;
+.boss-area{
+  background:linear-gradient(180deg,var(--panel2),var(--panel));
+  border:1px solid var(--gold-line);border-radius:12px;padding:10px 12px;position:relative;
+  box-shadow:0 4px 18px rgba(0,0,0,.45),inset 0 0 26px rgba(82,52,150,.18);
+  outline:1px solid rgba(212,175,55,.12);outline-offset:2px;
 }
-.card-btn:active{transform:scale(.95);}
-.card-btn.selected{border-color:var(--card-sel);background:#2a3a5a;box-shadow:0 0 8px rgba(200,169,81,.4);}
-.card-btn.disabled{opacity:.3;cursor:not-allowed;}
-.card-btn.cursed{border-color:#9b59b6;box-shadow:0 0 10px rgba(155,89,182,.6);animation:cursePulse 1.5s infinite;}
-@keyframes cursePulse{0%,100%{box-shadow:0 0 6px rgba(155,89,182,.4);}50%{box-shadow:0 0 14px rgba(155,89,182,.8);}}
-.card-btn .card-pip{font-size:18px;font-weight:bold;}
-.card-btn .card-elem{font-size:9px;color:var(--text2);}
-.card-btn .card-suit{font-size:10px;color:var(--text2);}
-.card-btn .court-desc{font-size:8px;color:var(--gold2);margin-top:1px;white-space:nowrap;}
-.card-btn.fire{border-left:3px solid var(--fire);}
-.card-btn.water{border-left:3px solid var(--water);}
-.card-btn.wind{border-left:3px solid var(--wind);}
-.card-btn.earth{border-left:3px solid var(--earth);}
+.boss-header{display:flex;justify-content:space-between;align-items:center;}
+.boss-name{font-size:17px;font-weight:bold;font-family:var(--serif);color:var(--gold2);letter-spacing:1px;text-shadow:0 0 10px rgba(212,175,55,.25);}
+.boss-align{font-size:12px;padding:2px 9px;border-radius:10px;font-weight:bold;border:1px solid transparent;}
+.boss-align.upright{background:rgba(45,106,79,.45);color:#95d5b2;border-color:rgba(149,213,178,.35);}
+.boss-align.reversed{background:rgba(106,45,45,.45);color:#e8a0aa;border-color:rgba(213,149,159,.35);}
+.boss-sub{font-size:11px;color:var(--text2);margin:2px 0 6px;font-style:italic;}
+.hp-bar-wrap{height:16px;background:#0a0714;border-radius:8px;overflow:hidden;position:relative;border:1px solid rgba(212,175,55,.3);box-shadow:inset 0 2px 5px rgba(0,0,0,.6);}
+.hp-bar{height:100%;border-radius:7px;transition:width .5s cubic-bezier(.4,0,.2,1);}
+.hp-bar.boss{background:linear-gradient(180deg,#ff6b6b,#b8262f 60%,#8e1c24);box-shadow:0 0 10px rgba(224,72,79,.5);}
+.hp-bar.player{background:linear-gradient(180deg,#6ef0a8,#1f9d5c 60%,#157a45);box-shadow:0 0 10px rgba(61,220,132,.4);}
+.hp-text{position:absolute;right:7px;top:0;line-height:15px;font-size:11px;font-weight:bold;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.9);}
 
-.preview-bar{background:var(--bg3);border-radius:8px;padding:6px 10px;font-size:12px;color:var(--gold2);text-align:center;min-height:28px;}
+.log-area{flex:1;min-height:0;background:rgba(20,14,40,.75);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:10px 12px;overflow-y:auto;font-size:13px;line-height:1.7;}
+.log-area::-webkit-scrollbar{width:4px;}
+.log-area::-webkit-scrollbar-thumb{background:var(--gold-dim);border-radius:2px;}
+.log-boss{color:#ff8d7c;}
+.log-player{color:#6fe8b8;}
+.log-system{color:var(--text2);}
+.log-damage{color:#ffd76a;font-weight:bold;text-shadow:0 0 8px rgba(255,170,60,.25);}
+.log-divider{border-top:1px dashed rgba(212,175,55,.25);margin:6px 0;}
+
+.player-bar{display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:4px 2px;position:relative;}
+.player-hp-label{display:flex;align-items:center;gap:6px;}
+.shield-badge{background:linear-gradient(180deg,#5fb6ff,#2a7cc9);padding:1px 7px;border-radius:8px;font-size:11px;box-shadow:0 0 8px rgba(84,169,255,.4);}
+.status-icons{display:flex;gap:4px;font-size:11px;flex-wrap:wrap;justify-content:flex-end;}
+.status-tag{padding:1px 6px;border-radius:8px;background:rgba(82,52,150,.35);border:1px solid rgba(165,156,192,.25);color:var(--text2);}
+
+.hand-section{background:linear-gradient(180deg,var(--panel),rgba(20,14,40,.9));border:1px solid rgba(212,175,55,.18);border-radius:12px;padding:8px;}
+.hand-label{font-size:11px;color:#eed990;margin-bottom:5px;letter-spacing:2px;font-family:var(--serif);}
+.hand-row{display:flex;flex-wrap:wrap;gap:6px;}
+
+/* --- 塔罗卡牌 --- */
+.card-btn{
+  min-width:58px;padding:7px 4px 6px;border:1px solid var(--card-border);
+  background:linear-gradient(165deg,#261c52 0%,#171036 65%,#1c1342 100%);
+  color:var(--text);font-size:13px;border-radius:8px;cursor:pointer;text-align:center;
+  transition:transform .18s,box-shadow .18s,border-color .18s;line-height:1.25;position:relative;
+  box-shadow:0 2px 7px rgba(0,0,0,.5);
+}
+.card-btn::before{content:'';position:absolute;inset:2px;border:1px solid rgba(212,175,55,.22);border-radius:6px;pointer-events:none;}
+.card-btn:active{transform:scale(.94);}
+.card-btn.selected{
+  border-color:var(--gold);transform:translateY(-6px);
+  background:linear-gradient(165deg,#352866 0%,#211748 65%,#271b52 100%);
+  box-shadow:0 8px 18px rgba(0,0,0,.55),0 0 16px rgba(212,175,55,.55);
+}
+.card-btn.selected::before{border-color:rgba(243,221,154,.65);}
+.card-btn.disabled{opacity:.28;cursor:not-allowed;filter:grayscale(.5);}
+.card-btn.cursed{border-color:#9b59b6;box-shadow:0 0 10px rgba(155,89,182,.6);animation:cursePulse 1.5s infinite;}
+@keyframes cursePulse{0%,100%{box-shadow:0 0 6px rgba(155,89,182,.4);}50%{box-shadow:0 0 16px rgba(155,89,182,.85);}}
+.card-btn .card-pip{font-size:19px;font-weight:bold;font-family:var(--serif);text-shadow:0 0 8px rgba(0,0,0,.5);}
+.card-btn .card-elem{font-size:9px;color:var(--text2);margin-top:1px;}
+.card-btn .card-suit{font-size:10px;color:var(--text2);letter-spacing:1px;}
+.card-btn .court-desc{font-size:8px;color:var(--gold2);margin-top:2px;white-space:nowrap;opacity:.9;}
+.card-btn.fire{border-color:rgba(255,110,80,.5);}
+.card-btn.fire .card-pip{color:var(--fire);}
+.card-btn.water{border-color:rgba(84,169,255,.5);}
+.card-btn.water .card-pip{color:var(--water);}
+.card-btn.wind{border-color:rgba(94,224,160,.5);}
+.card-btn.wind .card-pip{color:var(--wind);}
+.card-btn.earth{border-color:rgba(234,168,62,.5);}
+.card-btn.earth .card-pip{color:var(--earth);}
+.card-btn.fire.selected,.card-btn.water.selected,.card-btn.wind.selected,.card-btn.earth.selected{border-color:var(--gold);}
+/* 局部刷新动画: 仅新获得的牌入场, 状态变化的牌脉冲, 其余牌不重播 */
+.card-btn.card-new{animation:dealIn .38s cubic-bezier(.2,.8,.3,1) backwards;}
+.card-btn.card-new:nth-child(2){animation-delay:.05s;}
+.card-btn.card-new:nth-child(3){animation-delay:.1s;}
+.card-btn.card-new:nth-child(4){animation-delay:.15s;}
+.card-btn.card-new:nth-child(5){animation-delay:.2s;}
+.card-btn.card-new:nth-child(6){animation-delay:.25s;}
+.card-btn.card-new:nth-child(7){animation-delay:.3s;}
+.card-btn.card-new:nth-child(8){animation-delay:.35s;}
+@keyframes dealIn{from{opacity:0;transform:translateY(16px) rotate(3deg);}to{opacity:1;transform:none;}}
+.card-btn.card-changed{animation:cardChanged .55s ease;}
+@keyframes cardChanged{0%,100%{transform:none;}35%{transform:scale(1.07);box-shadow:0 0 18px rgba(212,175,55,.8);}}
+
+.preview-bar{
+  background:linear-gradient(180deg,rgba(212,175,55,.1),rgba(212,175,55,.03));
+  border:1px solid rgba(212,175,55,.28);border-radius:8px;padding:6px 10px;
+  font-size:12px;color:var(--gold2);text-align:center;min-height:28px;
+}
 
 .action-bar{display:flex;gap:8px;padding:4px 0 8px;}
-.action-btn{flex:1;padding:12px;border:none;border-radius:8px;font-size:15px;font-weight:bold;cursor:pointer;transition:all .2s;}
-.btn-play{background:var(--gold);color:var(--bg);}
-.btn-play:disabled{background:#555;color:#888;cursor:not-allowed;}
-.btn-skip{background:var(--bg3);color:var(--text);}
-.btn-rules{width:36px;flex:none;background:var(--bg3);color:var(--text2);font-size:16px;}
+.action-btn{flex:1;padding:12px;border:none;border-radius:9px;font-size:15px;font-weight:bold;cursor:pointer;transition:all .2s;font-family:var(--serif);letter-spacing:3px;}
+.btn-play{
+  background:linear-gradient(180deg,#f3dd9a 0%,#d4af37 55%,#a87f1c 100%);color:#241a08;
+  box-shadow:0 3px 12px rgba(212,175,55,.35),inset 0 1px 0 rgba(255,255,255,.45);
+  text-shadow:0 1px 0 rgba(255,255,255,.3);
+}
+.btn-play:active:not(:disabled){transform:scale(.97);}
+.btn-play:disabled{background:#3a3354;color:#6e6694;box-shadow:none;text-shadow:none;cursor:not-allowed;}
+.btn-skip{background:var(--panel3);color:var(--text2);border:1px solid rgba(165,156,192,.25);}
+.btn-skip:active{background:var(--panel2);}
+.btn-rules{width:38px;flex:none;background:var(--panel3);color:var(--gold2);font-size:16px;border:1px solid var(--gold-line);}
 
 /* --- 祝福 --- */
 #screen-blessing{justify-content:center;align-items:center;gap:16px;padding:30px 20px;text-align:center;}
-#screen-blessing h2{color:var(--gold);font-size:20px;}
+#screen-blessing h2{color:var(--gold2);font-size:22px;font-family:var(--serif);letter-spacing:4px;text-shadow:0 0 14px rgba(212,175,55,.4);}
 .blessing-cards{display:flex;flex-direction:column;gap:12px;width:100%;}
-.blessing-card{padding:16px;border:1px solid var(--card-border);background:var(--bg2);border-radius:10px;cursor:pointer;text-align:left;transition:all .2s;}
-.blessing-card:active{border-color:var(--gold);background:var(--bg3);}
+.blessing-card{
+  padding:16px;border:1px solid var(--gold-line);border-radius:12px;cursor:pointer;text-align:left;transition:all .25s;
+  background:linear-gradient(165deg,var(--panel2),var(--panel));position:relative;
+  box-shadow:0 4px 14px rgba(0,0,0,.4);animation:riseIn .5s ease backwards;
+}
+.blessing-card:nth-child(2){animation-delay:.12s;}
+.blessing-card:nth-child(3){animation-delay:.24s;}
+@keyframes riseIn{from{opacity:0;transform:translateY(22px);}to{opacity:1;transform:none;}}
+.blessing-card::before{content:'';position:absolute;inset:3px;border:1px solid rgba(212,175,55,.15);border-radius:9px;pointer-events:none;}
+.blessing-card:active{border-color:var(--gold);box-shadow:0 0 18px rgba(212,175,55,.4);transform:translateY(-2px);}
 .blessing-card.disabled{opacity:.35;cursor:not-allowed;}
-.blessing-card h3{font-size:16px;color:var(--gold2);margin-bottom:4px;}
+.blessing-card h3{font-size:16px;color:var(--gold2);margin-bottom:4px;font-family:var(--serif);letter-spacing:2px;}
 .blessing-card p{font-size:13px;color:var(--text2);}
 
 /* --- 结果 --- */
 #screen-result{justify-content:center;align-items:center;gap:20px;padding:40px 24px;text-align:center;}
-#screen-result h2{font-size:28px;}
+#screen-result h2{font-size:30px;font-family:var(--serif);letter-spacing:4px;filter:drop-shadow(0 0 14px rgba(212,175,55,.3));}
 #screen-result .result-stats{font-size:14px;color:var(--text2);line-height:2;}
 
 /* --- 弹窗 --- */
-.modal{display:none;position:absolute;inset:0;background:rgba(0,0,0,.7);z-index:10;justify-content:center;align-items:center;padding:20px;}
+.modal{display:none;position:absolute;inset:0;background:rgba(7,5,18,.78);z-index:10;justify-content:center;align-items:center;padding:20px;backdrop-filter:blur(3px);}
 .modal.active{display:flex;}
-.modal-content{background:var(--bg2);border:1px solid var(--gold);border-radius:12px;padding:20px;width:100%;max-width:360px;text-align:center;}
-.modal-content h3{color:var(--gold);margin-bottom:12px;}
-.modal-btns{display:flex;flex-direction:column;gap:8px;margin-top:12px;}
-.modal-btn{padding:12px;border:1px solid var(--card-border);background:var(--card-bg);color:var(--text);border-radius:8px;cursor:pointer;font-size:14px;}
-.modal-btn:active{border-color:var(--gold);}
+.modal-content{
+  background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--gold);
+  border-radius:14px;padding:22px;width:100%;max-width:360px;text-align:center;
+  outline:1px solid rgba(212,175,55,.2);outline-offset:3px;
+  box-shadow:0 10px 40px rgba(0,0,0,.7),0 0 30px rgba(212,175,55,.12);
+  animation:modalIn .3s cubic-bezier(.2,.8,.3,1.2) both;
+}
+@keyframes modalIn{from{opacity:0;transform:scale(.86);}to{opacity:1;transform:scale(1);}}
+.modal-content h3{color:var(--gold2);margin-bottom:12px;font-family:var(--serif);letter-spacing:3px;font-size:18px;}
+.modal-btns{display:flex;flex-direction:column;gap:8px;margin-top:14px;}
+.modal-btn{padding:12px;border:1px solid var(--card-border);background:var(--card-bg);color:var(--text);border-radius:9px;cursor:pointer;font-size:14px;transition:all .2s;}
+.modal-btn:active{border-color:var(--gold);box-shadow:0 0 10px rgba(212,175,55,.3);}
 
 /* --- 旅途进度 --- */
-.journey-bar{display:flex;gap:4px;justify-content:center;padding:2px 0;}
-.journey-dot{width:10px;height:10px;border-radius:50%;background:var(--bg3);}
-.journey-dot.done{background:var(--hp-green);}
-.journey-dot.current{background:var(--gold);box-shadow:0 0 6px var(--gold);}
+.journey-bar{display:flex;gap:7px;justify-content:center;padding:3px 0;}
+.journey-dot{width:9px;height:9px;background:var(--panel3);border:1px solid rgba(165,156,192,.3);transform:rotate(45deg);border-radius:2px;transition:all .3s;}
+.journey-dot.done{background:var(--hp-green);border-color:var(--hp-green);box-shadow:0 0 5px rgba(61,220,132,.5);}
+.journey-dot.current{background:var(--gold);border-color:var(--gold2);box-shadow:0 0 9px var(--gold);animation:dotPulse 1.6s ease-in-out infinite;}
+@keyframes dotPulse{0%,100%{box-shadow:0 0 5px var(--gold);}50%{box-shadow:0 0 13px var(--gold);}}
 
 /* --- 规则页 --- */
 #screen-rules{padding:12px 16px;overflow-y:auto;}
 .rules-back{background:none;border:none;color:var(--gold);font-size:14px;cursor:pointer;padding:4px 0;margin-bottom:8px;}
-.rules-title{color:var(--gold);font-size:20px;text-align:center;margin-bottom:12px;}
+.rules-title{color:var(--gold2);font-size:21px;text-align:center;margin-bottom:12px;font-family:var(--serif);letter-spacing:5px;text-shadow:0 0 12px rgba(212,175,55,.3);}
 .rules-section{margin-bottom:14px;}
-.rules-section h3{color:var(--gold2);font-size:14px;margin-bottom:4px;border-bottom:1px solid var(--bg3);padding-bottom:3px;}
+.rules-section h3{color:var(--gold2);font-size:14px;margin-bottom:4px;border-bottom:1px solid rgba(212,175,55,.25);padding-bottom:3px;font-family:var(--serif);letter-spacing:2px;}
 .rules-section p,.rules-section ul{font-size:12px;color:var(--text2);line-height:1.8;}
 .rules-section ul{padding-left:16px;}
 .rules-counter{display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:12px;color:var(--text2);margin:4px 0;}
-.rules-counter span{background:var(--bg3);padding:3px 8px;border-radius:4px;text-align:center;}
+.rules-counter span{background:var(--panel3);border:1px solid rgba(165,156,192,.2);padding:3px 8px;border-radius:6px;text-align:center;}
 
 /* --- 教学 --- */
 #screen-tutorial{justify-content:center;align-items:center;gap:12px;padding:30px 20px;text-align:center;}
-#screen-tutorial h2{color:var(--gold);font-size:20px;}
+#screen-tutorial h2{color:var(--gold2);font-size:22px;font-family:var(--serif);letter-spacing:4px;text-shadow:0 0 12px rgba(212,175,55,.3);}
 .tut-level-list{display:flex;flex-direction:column;gap:8px;width:100%;}
-.tut-level{padding:12px;border:1px solid var(--card-border);background:var(--bg2);border-radius:8px;cursor:pointer;text-align:left;display:flex;justify-content:space-between;align-items:center;}
-.tut-level:active{border-color:var(--gold);}
+.tut-level{padding:12px 14px;border:1px solid rgba(212,175,55,.25);background:linear-gradient(165deg,var(--panel2),var(--panel));border-radius:10px;cursor:pointer;text-align:left;display:flex;justify-content:space-between;align-items:center;transition:all .2s;}
+.tut-level:active{border-color:var(--gold);box-shadow:0 0 12px rgba(212,175,55,.3);}
 .tut-level .tl-name{font-size:14px;color:var(--text);}
 .tut-level .tl-desc{font-size:11px;color:var(--text2);}
 .tut-level .tl-status{font-size:12px;color:var(--hp-green);}
-.hint-bar{background:#2d4a1e;border:1px solid #5a8a3a;border-radius:8px;padding:8px 12px;font-size:12px;color:#b5e48c;text-align:center;line-height:1.5;}
+.hint-bar{background:rgba(36,74,40,.5);border:1px solid rgba(90,138,58,.6);border-radius:8px;padding:8px 12px;font-size:12px;color:#b5e48c;text-align:center;line-height:1.5;}
 .hint-bar .hint-obj{font-weight:bold;color:#d4fc79;font-size:13px;}
+
+/* --- 战斗特效 --- */
+#fx-layer{position:absolute;inset:0;pointer-events:none;z-index:50;overflow:hidden;}
+.fx-float{
+  position:absolute;font-weight:bold;font-size:24px;font-family:var(--serif);
+  transform:translate(-50%,0);animation:fxFloat .95s ease-out forwards;white-space:nowrap;
+}
+.fx-float.dmg-boss{color:#ffd76a;text-shadow:0 0 10px rgba(255,140,60,.9),0 2px 3px rgba(0,0,0,.8);}
+.fx-float.dmg-player{color:#ff7b6b;text-shadow:0 0 10px rgba(255,60,60,.8),0 2px 3px rgba(0,0,0,.8);}
+.fx-float.heal{color:#7bf2a8;text-shadow:0 0 10px rgba(61,220,132,.8),0 2px 3px rgba(0,0,0,.8);}
+@keyframes fxFloat{
+  0%{opacity:0;transform:translate(-50%,0) scale(.6);}
+  18%{opacity:1;transform:translate(-50%,-12px) scale(1.18);}
+  100%{opacity:0;transform:translate(-50%,-58px) scale(1);}
+}
+.hit-shake{animation:hitShake .42s;}
+@keyframes hitShake{0%,100%{transform:translateX(0);}20%{transform:translateX(-5px);}45%{transform:translateX(4px);}70%{transform:translateX(-3px);}85%{transform:translateX(2px);}}
 </style>
 </head>
 <body>
@@ -150,6 +272,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'PingFa
   <div id="screen-menu" class="screen active">
     <h1>愚者之旅</h1>
     <h2>The Fool's Journey</h2>
+    <div class="menu-deco">✦ ─── ☾ ─── ✦</div>
     <div style="margin:12px 0;color:var(--text2);font-size:13px;line-height:1.8;">
       塔罗牌灵感卡牌游戏<br>以大阿尔卡纳为Boss · 小阿尔卡纳为武器
     </div>
@@ -222,6 +345,9 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'PingFa
   <!-- 规则 -->
   <div id="screen-rules" class="screen"></div>
 
+  <!-- 特效层 -->
+  <div id="fx-layer"></div>
+
   <!-- 选择弹窗 -->
   <div class="modal" id="modal-choice">
     <div class="modal-content">
@@ -273,6 +399,37 @@ function $(id){return document.getElementById(id);}
 function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));$(id).classList.add('active');}
 
 /* ================================================================
+   战斗特效 (伤害飘字 / 受击抖动)
+   ================================================================ */
+function fxFloat(text, targetEl, cls){
+  var layer = $('fx-layer');
+  if (!layer || !targetEl) return;
+  var ar = $('app').getBoundingClientRect();
+  var tr = targetEl.getBoundingClientRect();
+  var s = document.createElement('span');
+  s.className = 'fx-float ' + (cls||'');
+  s.textContent = text;
+  s.style.left = (tr.left - ar.left + tr.width/2 + (Math.random()*44-22)) + 'px';
+  s.style.top  = (tr.top - ar.top + tr.height/2 - 10) + 'px';
+  layer.appendChild(s);
+  setTimeout(function(){ if (s.parentNode) s.parentNode.removeChild(s); }, 1000);
+}
+function fxShake(el){
+  if (!el) return;
+  el.classList.remove('hit-shake');
+  void el.offsetWidth;
+  el.classList.add('hit-shake');
+}
+
+/* 技能文案中的内部英文值转为中文显示 */
+function sanitizeSkillDesc(desc){
+  if (!desc) return '';
+  return String(desc)
+    .replace(/fire/g,'🔥火').replace(/water/g,'🌊水').replace(/wind/g,'💨风').replace(/earth/g,'🌍土')
+    .replace(/wands/g,'权杖').replace(/cups/g,'圣杯').replace(/swords/g,'宝剑').replace(/pentacles/g,'星币');
+}
+
+/* ================================================================
    规则页
    ================================================================ */
 function renderRules(){
@@ -282,15 +439,15 @@ function renderRules(){
   <div class="rules-section"><h3>基础流程</h3><p>
     每回合: Boss先行动(技能或普攻) → 玩家出1张数字牌(可附加1张宫廷牌) → 结算伤害 → 抽1牌。<br>
     玩家25HP, 初始5张手牌, 上限8张。Boss普攻固定3伤害。击败Boss即胜利。<br>
-    跳过回合会扣除1点HP。
+    跳过回合会扣除1点HP。若手牌中没有数字牌, 跳过时会弃置1张宫廷牌(优先弃置选中的)再抽牌。
   </p></div>
   <div class="rules-section"><h3>元素与克制</h3><p>
-    四元素循环克制: 火→土→水→风→火<br>
+    四元素循环克制: 火→风→土→水→火<br>
     花色对应: 权杖=🔥火 · 圣杯=🌊水 · 宝剑=💨风 · 星币=🌍土
   </p>
   <div class="rules-counter">
-    <span>🔥克制🌍 (+2)</span><span>🌍克制🌊 (+2)</span>
-    <span>🌊克制💨 (+2)</span><span>💨克制🔥 (+2)</span>
+    <span>🔥克制💨 (+2)</span><span>💨克制🌍 (+2)</span>
+    <span>🌍克制🌊 (+2)</span><span>🌊克制🔥 (+2)</span>
   </div>
   <p>克制+2伤害 | 被克-1伤害 | 中性±0</p></div>
   <div class="rules-section"><h3>灵数系统</h3><p>
@@ -317,8 +474,9 @@ function renderRules(){
   </p></div>
   <div class="rules-section"><h3>短旅途模式</h3><p>
     愚人(HP12) → 5个随机Boss → 世界(终极Boss), 共7战。<br>
-    Boss第1回合强制施放技能。场间恢复70%最大HP。<br>
-    前2关胜利无奖励，第3关起可选祝福。场间恢复50%HP。<br>
+    Boss第1回合强制施放技能。场间恢复50%最大HP。<br>
+    手牌延续: 本关剩余手牌带入下一关, 下一关开始时再获得2张新手牌。<br>
+    前2关胜利无奖励，第3关起可选祝福。<br>
     祝福: 护盾4(上限6), 回复5HP, 永久+1需第3关后解锁。
   </p></div>`;
 }
@@ -351,7 +509,7 @@ const TUTORIAL_LEVELS = [
       {id:'t_p2',type:CardType.NUMBER,suit:Suit.PENTACLES,pip:2},
       {id:'t_c1',type:CardType.NUMBER,suit:Suit.CUPS,pip:1},
     ],
-    hint:'皇帝是🔥火属性。💨风克制🔥火(+2)。选择宝剑牌(💨风)攻击！',
+    hint:'皇帝是🔥火属性。🌊水克制🔥火(+2)。选择圣杯牌(🌊水)攻击！',
   },
   { id:'spirit', name:'第3课: 灵数对位',
     desc:'利用灵数系统获得额外伤害',
@@ -504,6 +662,12 @@ const Game = {
     if (this.journey.mode === 'short' && stage.bossId === 0) opts.hpOverride = 12;
     if (stage.bossId === 21) opts.defeatedCount = this.journey.defeatedBosses.length;
 
+    // 短旅途: 上一关剩余手牌带入下一关
+    var carryHand = null;
+    if (this.journey.mode === 'short' && this.journey.currentStage > 0 && this.deck) {
+      carryHand = this.deck.hand.map(function(c){return Object.assign({},c);});
+    }
+
     this.boss = BossController.create(stage.bossId, alignment, this.rng, opts);
     this.deck = new DeckManager(this.rng);
     this.deck.init();
@@ -515,7 +679,18 @@ const Game = {
     this._empressSuffocateCount = 0;
 
     this.deck.setHandLimit(this.player.handLimit);
-    this.deck.dealInitialHand(5);
+    if (carryHand) {
+      // 从新牌堆中移除同id牌, 防止与带入手牌重复
+      var carryIds = {};
+      for (var chi = 0; chi < carryHand.length; chi++) carryIds[carryHand[chi].id] = true;
+      this.deck.drawPile = this.deck.drawPile.filter(function(c){return !carryIds[c.id];});
+      for (var chj = 0; chj < carryHand.length; chj++) this.deck.addToHand(carryHand[chj]);
+      var carryDrawn = this.deck.draw(2);
+      this._carryInfo = { kept: carryHand.length, drawn: carryDrawn.length };
+    } else {
+      this.deck.dealInitialHand(5);
+      this._carryInfo = null;
+    }
 
     // 短旅途: Boss第一回合强制施放技能
     if (this.journey.mode === 'short' && this.boss.skillId) {
@@ -532,6 +707,7 @@ const Game = {
 
     this._log('system',`— 第${this.journey.currentStage+1}战 —`);
     this._log('system',`${ELEM_ICON[this.boss.element]} ${this.boss.name} (${ALIGN_CN[this.boss.alignment]}) HP:${this.boss.hp}`);
+    if (this._carryInfo) this._log('system','手牌延续: 保留'+this._carryInfo.kept+'张, 新获得'+this._carryInfo.drawn+'张');
     if (this.boss.passiveId) {
       const pData = this._getPassiveDesc(this.boss.passiveId);
       if (pData) this._log('system',`被动: ${pData}`);
@@ -620,9 +796,78 @@ const Game = {
       const ctx = this._buildCtx();
       var discardBefore = this.deck.discardPile.length;
       const result = executeSkill(this.boss.skillId, ctx);
-      // 隐者封闭文案修正
       var skillDesc = result.desc || '';
+
+      /* ---- 技能文案/效果修正: 必须在写入日志前完成, 保证文案与实际效果一致 ---- */
+      // 隐者逆位|封闭: 实际效果为禁止下一次抽牌(非整场)
       if (this.boss.skillId === 'hermit_seal') skillDesc = '封闭 — 下一次抽牌被禁止';
+      // 倒吊人逆位|停滞: 实际效果为灵数封锁(仍可抽牌, 但抽到的牌不触发灵数加成)
+      if (this.boss.skillId === 'hangedman_stagnate') {
+        this.status.removeFromPlayer(EffectType.DRAW_BAN);
+        this.boss._spiritBlockDraw = true;
+        skillDesc = '停滞 — 此后抽到的牌不再触发灵数加成';
+      }
+      // 星星正位|启明: 回复量上调至3HP (bundle回2, 此处补1)
+      if (this.boss.skillId === 'star_light') {
+        this.boss.hp = Math.min(this.boss.maxHp, this.boss.hp + 1);
+        skillDesc = '启明 — Boss回复3HP，玩家抽1牌';
+      }
+      // 女皇逆位|窒息: 最多生效2次, 之后改为Boss攻击+1
+      var empressOverLimit = false;
+      if (this.boss.skillId === 'empress_suffocate') {
+        this._empressSuffocateCount++;
+        if (this._empressSuffocateCount > 2) {
+          empressOverLimit = true;
+          this.deck.setHandLimit(this.deck.handLimit + 2);
+          this.boss._atkBonus = (this.boss._atkBonus||0) + 1;
+          skillDesc = '窒息 — 已达2次上限，改为Boss攻击+1';
+        } else {
+          skillDesc = '窒息 — 手牌上限-2（最多生效2次）';
+        }
+      }
+      // 恶魔正位|锁链: 实际效果为诅咒标记(打出该牌则下回合禁止出牌), 且不暴露内部卡牌id
+      if (this.boss.skillId === 'devil_chain' && result.cardId) {
+        skillDesc = '锁链 — 诅咒标记你的1张手牌';
+      }
+      // 恋人正位|抛择 → 更名"抉择"
+      if (this.boss.skillId === 'lovers_choice') {
+        skillDesc = '抉择 — 翻出2张牌，请选择';
+      }
+      // 审判正位|天启: 实际效果为变更元素克制玩家(详见后续日志)
+      if (this.boss.skillId === 'judgement_revelation' && skillDesc.indexOf('无可召唤') !== -1) {
+        skillDesc = '天启 — Boss元素将变为克制你手牌的元素';
+      }
+      // 世界|大圆满 / 审判|天启: 删除不实的"减半", 并展示被激活子技能的具体内容
+      var innerR = result.inner || null;
+      var devilMarkId = (this.boss.skillId === 'devil_chain' && result.cardId) ? result.cardId : null;
+      if (innerR) {
+        var innerDesc = sanitizeSkillDesc(innerR.desc || '');
+        if (innerR.cardId && innerDesc.indexOf('锁链') === 0) {
+          innerDesc = '锁链 — 诅咒标记你的1张手牌';
+          devilMarkId = innerR.cardId; // 子技能锁链同样生效诅咒标记
+        }
+        if (innerDesc.indexOf('抛择') === 0) innerDesc = '抉择 — 翻出2张牌，请选择';
+        skillDesc = skillDesc.replace('(减半)','').replace('（减半）','');
+        if (innerDesc) skillDesc += ' → ' + innerDesc;
+        // 子技能的待选弹窗/强制随机出牌上抛到主流程
+        if (innerR.requireChoice) {
+          result.requireChoice = true;
+          result.revealed = innerR.revealed;
+          result.choiceType = innerR.choiceType;
+        }
+        if (innerR.requireAutoPlay) result.requireAutoPlay = true;
+      }
+      // 元素/花色英文内部值转为中文显示
+      if (this.boss.skillId === 'magician_mimic' && ctx.lastPlayedElement && ctx.lastPlayedElement !== Element.NONE) {
+        skillDesc = '万象 — Boss元素变为' + ELEM_ICON[this.boss.element] + ELEM_CN[this.boss.element];
+      }
+      if (this.boss.skillId === 'wheel_turn') {
+        skillDesc = '命运流转 — Boss元素变为' + ELEM_ICON[this.boss.element] + ELEM_CN[this.boss.element];
+      }
+      if (this.boss.skillId === 'priestess_illusion' && result.suit) {
+        skillDesc = '幻象 — ' + SUIT_CN[result.suit] + '花色被封锁1回合';
+      }
+
       this._log('boss',`${this.boss.name} 发动技能: ${skillDesc}`);
       // 弃牌技能: 显示被弃的牌(比较技能前后弃牌堆变化)
       var discardAfter = this.deck.discardPile.length;
@@ -639,10 +884,10 @@ const Game = {
       }
       this._tutBossSkillSeen = true;
 
-      // 恶魔正位: 诅咒标记手牌
-      if (this.boss.skillId === 'devil_chain' && result.cardId) {
-        this._devilMark = result.cardId;
-        var markedCard = this.deck.hand.find(function(c){return c.id === result.cardId;});
+      // 恶魔正位/子技能锁链: 诅咒标记手牌(明细日志)
+      if (devilMarkId) {
+        this._devilMark = devilMarkId;
+        var markedCard = this.deck.hand.find(function(c){return c.id === devilMarkId;});
         if (markedCard) {
           var ml = markedCard.type === CardType.NUMBER
             ? (SUIT_CN[markedCard.suit] + markedCard.pip)
@@ -651,39 +896,15 @@ const Game = {
         }
       }
 
-      // 女皇逆位: 窒息最多2次，之后改为Boss攻击+1
-      if (this.boss.skillId === 'empress_suffocate') {
-        this._empressSuffocateCount++;
-        if (this._empressSuffocateCount > 2) {
-          // 超过2次: 恢复手牌上限，改为Boss攻击+1
-          this.deck.setHandLimit(this.deck.handLimit + 2);
-          this.boss._atkBonus = (this.boss._atkBonus||0) + 1;
-          skillDesc = '窒息 — 已达上限，Boss攻击+1';
-        } else {
-          // 正常触发: 弃置多余手牌
-          while (this.deck.hand.length > this.deck.handLimit) {
-            var exc = this.rng.pick(this.deck.hand);
-            if (exc) {
-              this.deck.discardById(exc.id);
-              this._log('system','窒息弃置: ' + this._cardName(exc));
-            }
+      // 女皇逆位|窒息: 未达上限时弃置多余手牌
+      if (this.boss.skillId === 'empress_suffocate' && !empressOverLimit) {
+        while (this.deck.hand.length > this.deck.handLimit) {
+          var exc = this.rng.pick(this.deck.hand);
+          if (exc) {
+            this.deck.discardById(exc.id);
+            this._log('system','窒息弃置: ' + this._cardName(exc));
           }
         }
-      }
-
-      // 星星正位: 启明 — 回复量上调至3HP
-      if (this.boss.skillId === 'star_light') {
-        // bundle已heal 2，补heal 1
-        this.boss.hp = Math.min(this.boss.maxHp, this.boss.hp + 1);
-        skillDesc = '启明 — Boss回复3HP，玩家抽1牌';
-      }
-
-      // 倒吊人逆位: 停滞 → 改为灵数封锁(抽到不触发灵数的牌)
-      if (this.boss.skillId === 'hangedman_stagnate') {
-        // 覆盖bundle的DRAW_BAN，改用自定义flag
-        this.status.removeFromPlayer(EffectType.DRAW_BAN);
-        this.boss._spiritBlockDraw = true;
-        skillDesc = '停滞 — 抽牌将不再触发灵数加成';
       }
 
       // 审判正位: 天启 — 变更元素为克制玩家最多元素
@@ -750,6 +971,18 @@ const Game = {
     if (this._inputLocked) return;
     this.player.takeDamage(1);
     this._log('player','跳过本回合 (-1 HP)');
+    // 防卡关: 手牌无数字牌可出时, 跳过会弃置1张宫廷牌(优先弃置选中的),
+    // 腾出手牌位以便回合结束时正常抽牌, 避免满手宫廷牌的死局
+    if (this.deck.getNumberCards().length === 0 && this.deck.hand.length > 0) {
+      var toDiscard = null;
+      if (this.selectedCourt) toDiscard = this.deck.hand.find(function(c){return c.id === Game.selectedCourt;});
+      if (!toDiscard) toDiscard = this.rng.pick(this.deck.hand);
+      if (toDiscard) {
+        this.deck.discardById(toDiscard.id);
+        this.selectedCourt = null;
+        this._log('system','手牌无数字牌, 弃置 ' + this._cardName(toDiscard) + ' 以便抽牌');
+      }
+    }
     if (!this.player.isAlive()) return this._endBattle(false);
     this._settleTurn();
   },
@@ -1132,7 +1365,7 @@ const Game = {
     var btns = $('modal-btns');
     btns.innerHTML = '';
     if (choice.revealed) {
-      $('modal-title').textContent = '抛择';
+      $('modal-title').textContent = '抉择';
       $('modal-desc').textContent = '选择一张加入手牌，另一张永久移除';
       for (var ri = 0; ri < choice.revealed.length; ri++) {
         var card = choice.revealed[ri];
@@ -1143,8 +1376,10 @@ const Game = {
           Game.deck.addToHand(c);
           var other = choice.revealed.find(function(x){return x.id!==c.id;});
           if (other) Game.deck.removedCards.push(other);
+          Game._log('player','抉择: 保留 ' + Game._cardName(c));
           Game._pendingChoice=null; modal.classList.remove('active');
-          Game._executePlayerTurn();
+          // 立即刷新: 新牌即刻进入手牌区并播放入场动画
+          Game._renderAll();
         };})(card);
         btns.appendChild(btn);
       }
@@ -1205,7 +1440,7 @@ const Game = {
       magician_table:'四元素台: 使用花色种数=Boss攻击加成',
       priestess_moonShadow:'月影: 连续2回合未克制→Boss回2HP',
       empress_nurture:'孕育: 受攻击50%概率让你抽1牌',
-      emperor_crown:'王权: 风克制修正降低',
+      emperor_crown:'王权: 水克制修正降低',
       hierophant_precept:'戒律: Ace伤害+50%',
       lovers_resonance:'共鸣: 连续2张同花色第二张+3',
       chariot_crush:'碾压: 伤害≤1时无效',
@@ -1306,6 +1541,12 @@ const Game = {
 
   _renderBoss: function() {
     var b = this.boss;
+    var area = document.querySelector('.boss-area');
+    if (this._fxBossRef === b && typeof this._fxBossHp === 'number') {
+      if (b.hp < this._fxBossHp) { fxFloat('-'+(this._fxBossHp-b.hp), area, 'dmg-boss'); fxShake(area); }
+      else if (b.hp > this._fxBossHp) { fxFloat('+'+(b.hp-this._fxBossHp), area, 'heal'); }
+    }
+    this._fxBossRef = b; this._fxBossHp = b.hp;
     var roman = ['0','I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII','XIII','XIV','XV','XVI','XVII','XVIII','XIX','XX','XXI'];
     $('boss-name').textContent = ELEM_ICON[b.element]+' '+(roman[b.id]||b.id)+' '+b.name;
     var alignEl = $('boss-align');
@@ -1320,6 +1561,12 @@ const Game = {
 
   _renderPlayer: function() {
     var p = this.player;
+    var pbar = document.querySelector('.player-bar');
+    if (this._fxPlayerRef === p && typeof this._fxPlayerHp === 'number') {
+      if (p.hp < this._fxPlayerHp) { fxFloat('-'+(this._fxPlayerHp-p.hp), pbar, 'dmg-player'); fxShake(pbar); }
+      else if (p.hp > this._fxPlayerHp) { fxFloat('+'+(p.hp-this._fxPlayerHp), pbar, 'heal'); }
+    }
+    this._fxPlayerRef = p; this._fxPlayerHp = p.hp;
     $('player-hp-text').textContent = p.hp+'/'+p.maxHp;
     $('player-hp-bar').style.width = (p.hp/p.maxHp*100)+'%';
     var sh = $('player-shield');
@@ -1364,6 +1611,19 @@ const Game = {
         if (numberCards[mi].pip > maxPip) maxPip = numberCards[mi].pip;
       }
     }
+
+    // 局部刷新: 按卡牌追踪状态签名, 仅新获得的牌播放入场动画、
+    // 状态因Boss技能/被动变化的牌播放脉冲动画, 其余牌不重播
+    if (this._fxDeckRef !== this.deck) { this._fxCardSig = null; this._fxDeckRef = this.deck; }
+    var prevSig = this._fxCardSig;
+    var nextSig = {};
+    function animCls(id, sig) {
+      nextSig[id] = sig;
+      if (!prevSig || !(id in prevSig)) return ' card-new';
+      if (prevSig[id] !== sig) return ' card-changed';
+      return '';
+    }
+
     $('number-hand').innerHTML = numberCards.map(function(c) {
       var elem = SUIT_TO_ELEMENT[c.suit];
       var locked = Game.status.isSuitLocked(c.suit);
@@ -1376,7 +1636,8 @@ const Game = {
       }
       var sel = Game.selectedNumber === c.id;
       var cursed = Game._devilMark === c.id;
-      return '<button class="card-btn '+elem+(sel?' selected':'')+(locked?' disabled':'')+(cursed?' cursed':'')+'"'
+      var anim = animCls(c.id, c.suit+'|'+c.pip+'|'+(locked?1:0)+'|'+(cursed?1:0));
+      return '<button class="card-btn '+elem+anim+(sel?' selected':'')+(locked?' disabled':'')+(cursed?' cursed':'')+'"'
         +' onclick="Game.selectNumber(\''+c.id+'\')"'+(locked?' disabled':'')+'>'
         +'<div class="card-pip">'+c.pip+(cursed?' 💀':'')+'</div>'
         +'<div class="card-elem">'+ELEM_ICON[elem]+ELEM_CN[elem]+'</div>'
@@ -1388,13 +1649,16 @@ const Game = {
       var elem = SUIT_TO_ELEMENT[c.suit];
       var sel = Game.selectedCourt === c.id;
       var descKey = c.rank + '_diff';
-      return '<button class="card-btn '+elem+(sel?' selected':'')+(courtSealed?' disabled':'')+'"'
+      var anim = animCls(c.id, c.suit+'|'+c.rank+'|'+(courtSealed?1:0));
+      return '<button class="card-btn '+elem+anim+(sel?' selected':'')+(courtSealed?' disabled':'')+'"'
         +' onclick="Game.selectCourt(\''+c.id+'\')"'+(courtSealed?' disabled':'')+'>'
         +'<div class="card-pip">'+RANK_CN[c.rank]+'</div>'
         +'<div class="card-elem">'+ELEM_ICON[elem]+ELEM_CN[elem]+'</div>'
         +'<div class="court-desc">'+COURT_EFFECT_CN[descKey]+'</div>'
         +'</button>';
     }).join('');
+
+    this._fxCardSig = nextSig;
 
     $('btn-play').disabled = !this.selectedNumber || this._inputLocked;
     if ($('btn-skip')) $('btn-skip').disabled = this._inputLocked;
