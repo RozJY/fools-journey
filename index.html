@@ -439,7 +439,7 @@ function renderRules(){
   <div class="rules-section"><h3>基础流程</h3><p>
     每回合: Boss先行动(技能或普攻) → 玩家出1张数字牌(可附加1张宫廷牌) → 结算伤害 → 抽1牌。<br>
     玩家25HP, 初始5张手牌, 上限8张。Boss普攻固定3伤害。击败Boss即胜利。<br>
-    跳过回合会扣除1点HP。若手牌中没有数字牌, 跳过时会弃置1张宫廷牌(优先弃置选中的)再抽牌。
+    跳过回合会扣除1点HP。若手牌已满且全为宫廷牌, 跳过时会随机弃置1张宫廷牌再抽牌。
   </p></div>
   <div class="rules-section"><h3>元素与克制</h3><p>
     四元素循环克制: 火→风→土→水→火<br>
@@ -919,8 +919,14 @@ const Game = {
         for (var ek in elemCount) {
           if (elemCount[ek] > maxC) { maxC = elemCount[ek]; maxElem = ek; }
         }
-        if (maxElem && COUNTER_MAP[maxElem]) {
-          var newElem = COUNTER_MAP[maxElem];
+        // 反查克制环: 找到"克制 maxElem"的元素 (COUNTER_MAP 的 key 克制 value)
+        var newElem = null;
+        if (maxElem) {
+          for (var ck in COUNTER_MAP) {
+            if (COUNTER_MAP[ck] === maxElem) { newElem = ck; break; }
+          }
+        }
+        if (newElem) {
           this.boss.element = newElem;
           this._log('system', '天启: Boss元素变为 ' + ELEM_ICON[newElem] + ELEM_CN[newElem] + ' (克制你最多的' + ELEM_CN[maxElem] + ')');
         }
@@ -971,16 +977,14 @@ const Game = {
     if (this._inputLocked) return;
     this.player.takeDamage(1);
     this._log('player','跳过本回合 (-1 HP)');
-    // 防卡关: 手牌无数字牌可出时, 跳过会弃置1张宫廷牌(优先弃置选中的),
+    // 防卡关: 仅当手牌达到上限且全为宫廷牌时, 跳过会随机弃置1张宫廷牌,
     // 腾出手牌位以便回合结束时正常抽牌, 避免满手宫廷牌的死局
-    if (this.deck.getNumberCards().length === 0 && this.deck.hand.length > 0) {
-      var toDiscard = null;
-      if (this.selectedCourt) toDiscard = this.deck.hand.find(function(c){return c.id === Game.selectedCourt;});
-      if (!toDiscard) toDiscard = this.rng.pick(this.deck.hand);
+    if (this.deck.getNumberCards().length === 0 && this.deck.hand.length >= this.deck.handLimit) {
+      var toDiscard = this.rng.pick(this.deck.hand);
       if (toDiscard) {
         this.deck.discardById(toDiscard.id);
-        this.selectedCourt = null;
-        this._log('system','手牌无数字牌, 弃置 ' + this._cardName(toDiscard) + ' 以便抽牌');
+        if (this.selectedCourt === toDiscard.id) this.selectedCourt = null;
+        this._log('system','手牌已满且无数字牌, 随机弃置 ' + this._cardName(toDiscard) + ' 以便抽牌');
       }
     }
     if (!this.player.isAlive()) return this._endBattle(false);
